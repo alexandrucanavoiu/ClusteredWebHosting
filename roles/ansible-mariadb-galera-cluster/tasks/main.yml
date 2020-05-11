@@ -1,0 +1,17 @@
+---
+# tasks file for ansible-mariadb-galera-cluster
+- import_tasks: prepare_mariadb_cluster.yml
+
+- import_tasks: mariadb_cluster_install.yml
+
+- import_tasks: mariadb_max_open_files.yml
+  when: >
+    ansible_service_mgr == "systemd" and
+    mariadb_max_open_files != 0
+
+- import_tasks: mariadb_oom_score_adjust.yml
+  when: >
+    ansible_service_mgr == "systemd" and
+    mariadb_oom_score_adjust != 0
+
+- import_tasks: mariadb_cluster_install.yml

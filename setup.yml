@@ -1,0 +1,46 @@
+- hosts: all
+  user: ansible
+  become: true
+  gather_facts: yes
+  roles:
+          - { role: repo-epel, tags: repo-epel }
+          - { role: ansible-cluster-prepare, tags: cluster-prepare }
+          - { role: ansible-change-hostname, tags: change-hostname }
+          - { role: ansible-disable-selinux, tags: disable-selinux }
+          - { role: ansible-iptables-services, tags: iptables }
+          - { role: ansible-useradd, tags: useradd }
+#          - { role: ansible-rsyslog, tags: rsyslog }
+  any_errors_fatal: true
+
+- hosts: lb
+  user: ansible
+  become: true
+  gather_facts: yes
+  roles:
+          - { role: haproxy, tags: haproxy }
+
+- hosts: nfs
+  user: ansible
+  become: true
+  gather_facts: yes
+  roles:
+    - { role: ansible-storage, tags: nfs-server }
+
+- hosts: nodes
+  user: ansible
+  become: true
+  gather_facts: yes
+#  strategy: free
+#  serial: 2
+  roles:
+    - { role: repo-remi, tags: repo-remi }
+    - { role: ansible-httpd, tags: httpd }
+    - { role: ansible-php-fpm, tags: php-fpm }
+    - { role: ansible-lighttpd, tags: lighttpd }
+
+- hosts: galera_cluster_nodes
+  user: ansible
+  become: true
+  gather_facts: yes
+  roles:
+    - { role: ansible-mariadb-galera-cluster, tags: mariadb-galera-cluster }

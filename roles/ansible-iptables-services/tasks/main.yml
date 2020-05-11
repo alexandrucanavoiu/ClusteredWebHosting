@@ -1,0 +1,22 @@
+---
+#    - name: "DEBUG HOSTVARS"
+#      debug:
+#        var: "hostvars"
+    - name: Install IPtables Services
+      yum:
+        name: iptables-services
+        state: installed
+
+    - name: Copy IPtables file
+      template:
+        src: iptables.j2
+        dest: /etc/sysconfig/iptables
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: enable iptables service
+      systemd:
+        name: iptables
+        state: restarted
+        enabled: yes

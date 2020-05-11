@@ -1,0 +1,9 @@
+# Command line options to pass to HAProxy at startup
+# The default is:
+CLI_OPTIONS="-Ws"
+
+# Specify an alternate configuration file. The default is:
+CONFIG_FILE=/etc/haproxy/haproxy.cfg
+
+# File used to track process IDs. The default is:
+PID_FILE=/var/run/haproxy.pid

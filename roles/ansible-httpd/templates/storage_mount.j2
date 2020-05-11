@@ -1,0 +1,19 @@
+#!/bin/sh
+# description: mount required shares
+# chkconfig: 2345 99 00
+
+case "$1" in
+'start')
+        touch /var/lock/subsys/storage_mount
+mkdir /home/{{ primary_domain_user }}
+mount -o noatime,nodiratime {{ nfs_ip_mount }}:{{ storage_path }}/{{ primary_domain_user }}/ /home/{{ primary_domain_user }}
+        ;;
+'stop')
+umount -l  /home/{{ primary_domain_user }}/
+        rm -f /var/lock/subsys/storage_mount
+        ;;
+*)
+        echo "Usage: $0 { start | stop }"
+        ;;
+esac
+exit 0

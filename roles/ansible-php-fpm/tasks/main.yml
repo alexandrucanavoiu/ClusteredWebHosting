@@ -1,0 +1,60 @@
+---
+  - name: Install PHP 73 on NODEs
+    yum:
+      name: "{{ php73_version }}"
+      state: present
+    when: install_php73 == 1
+    retries: 3
+
+  - name: Install PHP 74 on NODEs
+    yum:
+      name: "{{ php74_version }}"
+      state: present
+    when: install_php74 == 1
+    retries: 3
+
+  - name: php-fpm remove default config file
+    file:
+      path: "/etc/opt/remi/{{ item }}/php-fpm.d/www.conf"
+      state: absent
+    with_items: "{{ php_versions }}"
+
+  - name: PHP-FPM Copy {{ ansible_default_ipv4.address }}.conf file
+    template:
+      src: php-fpm-httpd.conf.j2
+      dest: "/etc/opt/remi/{{ default_php_version }}/php-fpm.d/{{ ansible_default_ipv4.address }}.conf"
+      owner: root
+      group: root
+      mode: '0644'
+
+  - name: PHP-FPM Copy {{ primary_domain }}.conf file
+    template:
+      src: php-fpm-domain.conf.j2
+      dest: "/etc/opt/remi/{{ default_php_version }}/php-fpm.d/{{ primary_domain }}.conf"
+      owner: root
+      group: root
+      mode: '0644'
+
+  - name: PHP-FPM 7.3 Copy php.ini file
+    template:
+      src: php73.ini.j2
+      dest: "/etc/opt/remi/php73/php.ini"
+      owner: root
+      group: root
+      mode: '0644'
+    when: install_php73 == 1
+
+  - name: PHP-FPM 7.4 Copy php.ini file
+    template:
+      src: php73.ini.j2
+      dest: "/etc/opt/remi/php74/php.ini"
+      owner: root
+      group: root
+      mode: '0644'
+    when: install_php74 == 1
+
+  - name: Enable PHP {{ default_php_version }} service
+    systemd:
+      name: "{{ default_php_version }}-php-fpm"
+      state: restarted
+      enabled: yes

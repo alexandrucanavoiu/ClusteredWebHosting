@@ -1,0 +1,32 @@
+---
+# tasks file for rsyslog
+- name: uninstall conflicting systemd-logger
+  package:
+    name: systemd-logger
+    state: absent
+
+- name: install rsyslog
+  package:
+    name: "{{ rsyslog_packages }}"
+    state: present
+  register: rsyslog_install_rsyslog
+  until: rsyslog_install_rsyslog is succeeded
+  retries: 3
+
+- name: configuring rsyslog
+  template:
+    src: rsyslog.conf.j2
+    dest: /etc/rsyslog.conf
+  notify:
+    - restart rsyslog
+
+- name: make configuration directory
+  file:
+    name: /etc/rsyslog.d/
+    state: directory
+
+- name: start and enable rsyslog
+  service:
+    name: "{{ rsyslog_service }}"
+    state: started
+    enabled: yes

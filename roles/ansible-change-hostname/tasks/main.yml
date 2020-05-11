@@ -1,0 +1,5 @@
+---
+# tasks file for ansible-change-hostname
+- name: change hostname to the servers
+  hostname:
+    name: "{{ inventory_hostname }}"

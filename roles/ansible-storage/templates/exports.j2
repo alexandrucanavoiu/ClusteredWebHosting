@@ -1,0 +1,5 @@
+{% for host in groups['nodes'] %}
+{% for ip_address_node in  hostvars[host]['ansible_all_ipv4_addresses'] %}
+/storage/websites/{{ primary_domain_user }} {{ ip_address_node }}(sync,no_root_squash,rw)
+{% endfor %}
+{% endfor %}

@@ -1,0 +1,169 @@
+---
+  - name: Download & Unarchive haproxy-2.1.3.tar.gz
+    unarchive:
+      src: "http://www.haproxy.org/download/2.1/src/haproxy-2.1.3.tar.gz"
+      dest: "{{ download_path }}"
+      remote_src: yes
+
+  - name: Haproxy ensure a list of packages installed
+    yum:
+      name:
+        - pcre-devel
+        - readline-devel
+      state: present
+
+  - name: Copy pyOpenSSL rpm file to server
+    get_url:
+      url: "https://cbs.centos.org/kojifiles/packages/pyOpenSSL/19.0.0/1.el7/src/pyOpenSSL-19.0.0-1.el7.src.rpm"
+      dest: "{{ download_path }}"
+
+  - name: Install pyOpenSSL package.
+    yum:
+      name: "{{ download_path }}/pyOpenSSL-19.0.0-1.el7.src.rpm"
+      state: present
+
+# haproxy prepare
+  - name: Check if {{ download_path }}/{{ haproxy_version }} exist.
+    stat:
+      path: "{{ download_path }}/{{ haproxy_version }}"
+    register: haproxy_folder
+
+  - name: Delete folder {{ haproxy_version }} if exist in {{ download_path }}
+    file:
+      path: "{{ download_path }}/{{ haproxy_version }}"
+      state: absent
+    when: haproxy_folder.stat.exists == true
+
+  - name: Download {{ haproxy_version }}
+    get_url:
+      url: "http://www.haproxy.org/download/2.1/src/{{ haproxy_version }}.tar.gz"
+      dest: "{{ download_path }}"
+    register: haproxy_source
+
+  - name: Unpacking HAProxy
+    unarchive:
+      copy: no
+      dest: "{{ download_path }}"
+      src: "{{ download_path }}/{{ haproxy_version }}.tar.gz"
+    register: haproxy_source_unpack
+
+# LUA prepare
+
+  - name: Check if {{ download_path }}/{{ lua_version }} exist.
+    stat:
+      path: "{{ download_path }}/{{ lua_version }}"
+    register: lua_folder
+
+  - name: Delete folder {{ lua_version }} if exist in {{ download_path }}
+    file:
+      path: "{{ download_path }}/{{ lua_version }}"
+      state: absent
+    when: lua_folder.stat.exists == true
+
+  - name: Download {{ lua_version }}
+    get_url:
+      url: "http://www.lua.org/ftp/{{ lua_version }}.tar.gz"
+      dest: "{{ download_path }}"
+    register: lua_source
+
+  - name: Unpacking LUA
+    unarchive:
+      copy: no
+      dest: "{{ download_path }}"
+      src: "{{ download_path }}/{{ lua_version }}.tar.gz"
+    register: lua_source_unpack
+
+# LUA Compile
+  - name: Run 'make linux test && make install' - {{ lua_version }}
+    shell: make linux test && make install
+    args:
+      chdir: "{{ download_path }}/{{ lua_version }}"
+    when: lua_source_unpack|changed
+    register: lua_configure
+
+# HAProxy Compile
+  - name: Run make & make install - {{ haproxy_version }}
+    shell: make -j $(nproc) TARGET=linux-glibc USE_OPENSSL=1 USE_ZLIB=1 USE_LUA=1 USE_PCRE=1 USE_SYSTEMD=1 && make install
+    args:
+      chdir: "{{ download_path }}/{{ haproxy_version }}"
+    when: haproxy_source_unpack|changed
+    register: haproxy_configure
+
+# Create haproxy folders
+  - name: Create haproxy folders in /etc
+    file:
+      path: "{{ item }}"
+      state: directory
+      owner: root
+      group: root
+      mode: '0755'
+    with_items:
+      - /etc/haproxy
+      - /etc/haproxy/ssl
+      - /etc/haproxy/errors
+      - "{{ download_path }}/ssl"
+
+  - name: copy default haproxy files
+    copy:
+      src: files/errors
+      dest: /etc/haproxy
+
+  - name: Copy Haproxy config file
+    template:
+      src: haproxy.cfg.j2
+      dest: /etc/haproxy/haproxy.cfg
+
+  - name: Copy Haproxy cloudflare ip list
+    copy:
+      src: "files/systemd/cloudflare.ip.list"
+      dest: /etc/haproxy/cloudflare.ip.list
+
+  - name: Copy systemd haproxy file
+    copy:
+      src: "files/systemd/systemd.haproxy"
+      dest: /etc/systemd/system/haproxy
+
+  - name: Copy sysconfig haproxy file
+    copy:
+      src: "files/systemd/sysconfig.haproxy"
+      dest: /etc/sysconfig/haproxy
+
+  - name: create ssl key for domain {{ primary_domain }}
+    openssl_privatekey:
+      path: "{{ download_path }}/ssl/{{ primary_domain }}.key"
+    register: key
+
+  - name: create ssl csr for domain {{ primary_domain }}
+    openssl_csr:
+      path: "{{ download_path }}/ssl/{{ primary_domain }}.csr"
+      privatekey_path: "{{ key.filename }}"
+      common_name: "{{ primary_domain }}"
+    register: csr
+
+  - name: create ssl certificates for domain {{ primary_domain }}
+    openssl_certificate:
+      path: "{{ download_path }}/ssl/{{ primary_domain }}.crt"
+      privatekey_path: "{{ csr.privatekey }}"
+      csr_path: "{{ csr.filename }}"
+      provider: selfsigned
+
+  - name: combine cert and key {{ primary_domain }} in one file
+    shell:
+      cmd: "cat {{ download_path }}/ssl/{{ primary_domain }}.key {{ download_path }}/ssl/{{ primary_domain }}.crt > /etc/haproxy/ssl/{{ primary_domain }}.keycacrt.crt"
+
+  - name: Enable haproxy service
+    systemd:
+       name: haproxy
+       state: started
+       enabled: yes
+       daemon_reload: yes
+
+  - name: Check all port numbers are accessible from current host
+    wait_for:
+      host: "{{ item }}"
+      port: 443
+      state: started         # Port should be open
+      delay: 0               # No wait before first check (sec)
+      timeout: 3             # Stop checking after timeout (sec)
+    ignore_errors: yes
+    with_items: "{{ groups['lb'] }}"

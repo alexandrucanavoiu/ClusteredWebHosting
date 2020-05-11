@@ -1,0 +1,64 @@
+---
+# tasks file for ansible-cluster-prepare
+  - name: Create download_cluster folder in /root
+    file:
+      path: "{{ download_path }}"
+      state: directory
+      owner: root
+      group: root
+      mode: '0755'
+
+  - name: install buildtools
+    package:
+      name: "{{ buildtools_packages }}"
+      state: present
+    register: buildtools_install_buildtools
+    until: buildtools_install_buildtools is succeeded
+    retries: 3
+
+  - name: install the package, force upgrade pip
+    shell: pip3 install --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
+
+  - name: install latest pyOpenSSL if needed
+    shell: pip3 install pyOpenSSL --trusted-host pypi.org --trusted-host files.pythonhosted.org
+
+  - name: remove pyOpenSSL
+    yum:
+      name: "pyOpenSSL"
+      state: absent
+
+  - name: Determine if the group id {{ primary_domain_gid }} exists.
+    shell: grep {{ primary_domain_gid }} /etc/group |  awk -F":" '{print $3}'
+    changed_when: false
+    register: existing_group
+
+  - name: Determine if the group id {{ primary_domain_gid }} exists.
+    shell: grep {{ primary_domain_gid }} /etc/group |  awk -F":" '{print $3}'
+    changed_when: false
+    register: existing_users
+
+#  - name: Check GUID if exist
+  - fail:
+      msg: "GUID {{ primary_domain_gid }} exists on this server."
+    when: existing_group.stdout != ""
+
+#  - name: Check UID if exist
+  - fail:
+      msg: "UID {{ primary_domain_gid }} exists on this server."
+    when: existing_users.stdout != ""
+
+  - name: Disable Firewalld service
+    yum:
+      name: firewalld
+      state: absent
+
+#  - name: Ensure rpcbind service/socket, rpc-statd is stopped.
+#    service:
+#      name: "{{ item }}"
+#      state: stopped
+#      enabled: no
+#      masked: yes
+#    with_items:
+#      - rpc-statd.service
+#      - rpcbind.service
+#      - rpcbind.socket

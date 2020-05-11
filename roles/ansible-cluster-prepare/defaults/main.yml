@@ -1,0 +1,20 @@
+---
+buildtools_packages:
+  - "@Development Tools"
+  - wget
+  - curl
+  - openssl
+  - openssl-devel.x86_64
+  - systemd-devel
+  - vim
+  - net-tools
+  - elfutils-libelf-devel
+  - perl-Digest-SHA
+  - python3
+  - python3-devel
+  - python3-pip
+  - yum-utils
+  - nfs-utils
+  - nfs4-acl-tools
+  - libnfsidmap
+  - dos2unix

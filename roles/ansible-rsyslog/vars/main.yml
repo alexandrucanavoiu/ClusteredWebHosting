@@ -1,0 +1,6 @@
+---
+# vars file for ansible-rsyslog
+rsyslog_packages:
+  - rsyslog
+
+rsyslog_service: rsyslog

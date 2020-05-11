@@ -1,0 +1,73 @@
+---
+- name: Install MariaDB
+  package:
+    name: "{{ mariadb_packages }}"
+    state: present
+  register: mariadb_packages_install
+  until: mariadb_packages_install is succeeded
+  retries: 3
+
+- name: Ensuring mariadb mysql is enabled on boot and started
+  service:
+    name: "mariadb"
+    enabled: yes
+
+- name: Configuring db server and galera
+  template:
+    src: "{{ item }}.j2"
+    dest: "/{{ item }}"
+  become: true
+  with_items:
+    - 'etc/my.cnf.d/server.cnf'
+  when: galera_cluster_sst_method == 1
+
+- name: Configuring db server and galera
+  template:
+    src: "{{ item }}.j2"
+    dest: "/{{ item }}"
+  become: true
+  with_items:
+    - 'etc/my.cnf'
+  when: galera_cluster_sst_method == 0
+
+- name: MariaDB Galera cluster - galera_new_cluster
+  command: "/usr/bin/galera_new_cluster"
+  when: inventory_hostname == galera_mysql_master_node
+  register: galera_new_cluster_result
+
+- name: Set MariaDB root password
+  command: mysql -e 'ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD("{{ galera_cluster_root_password }}")'
+  when: inventory_hostname == galera_mysql_master_node
+  ignore_errors: yes
+
+- name: Make sure there is neither a database with name test
+  mysql_db:
+    login_user: root
+    login_password: "{{ galera_cluster_root_password }}"
+    name: test
+    state: absent
+  when: inventory_hostname == galera_mysql_master_node
+
+- name: Create database user with name mariabackup with privileges RELOAD, PROCESS, LOCK TABLES, REPLICATION CLIENT
+  mysql_user:
+    login_user: root
+    login_password: "{{ galera_cluster_root_password }}"
+    name: mariabackup
+    password: "{{ galera_cluster_mariadbbackup_password }}"
+    priv: "*.*:RELOAD,PROCESS,LOCK TABLES,REPLICATION CLIENT"
+    state: present
+  when: inventory_hostname == galera_mysql_master_node
+  register: galera_mariabackup_user
+
+- name: Joining galera cluster nodes
+  service:
+    name: "mariadb"
+    state: "started"
+  when: inventory_hostname != galera_mysql_master_node
+
+- name: Update MariaDB root password
+  login_user: root
+  login_password: "{{ galera_cluster_root_password }}"
+  command: mysql -e 'ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD("{{ galera_cluster_root_password }}")'
+  when: inventory_hostname == galera_mysql_master_node
+  ignore_errors: yes

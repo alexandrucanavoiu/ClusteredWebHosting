@@ -1,0 +1,21 @@
+---
+- name: Create folder - oom_score_adjust
+  file:
+    path: /etc/systemd/system/mariadb.service.d
+    state: directory
+    recurse: yes
+    owner: root
+    group: root
+    mode: "u=rwx,g=rx,o=rx"
+
+- name: Add the systemd file - oom_score_adjust
+  template:
+    src: "etc/systemd/system/mariadb.service.d/oom-score-adjust.conf.j2"
+    dest: "/etc/systemd/system/mariadb.service.d/oom-score-adjust.conf"
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+
+- name: Just force systemd to reread configs systemd - oom_score_adjust
+  systemd:
+    daemon_reload: yes

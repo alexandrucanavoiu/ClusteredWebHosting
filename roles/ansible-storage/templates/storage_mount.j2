@@ -1,0 +1,20 @@
+#!/bin/sh
+# description: mount required shares
+# chkconfig: 2345 99 00
+
+case "$1" in
+'start')
+        touch /var/lock/subsys/storage_mount
+ln -sn {{ storage_path }}/{{ primary_domain_user }}/ /home/{{ primary_domain_user }}/
+
+        ;;
+'stop')
+unlink  /home/{{ primary_domain_user }}
+        rm -f /var/lock/subsys/storage_mount
+
+        ;;
+*)
+        echo "Usage: $0 { start | stop }"
+        ;;
+esac
+exit 0

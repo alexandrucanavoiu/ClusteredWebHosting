@@ -1,0 +1,34 @@
+---
+# vars file for ansible-httpd
+httpd_requirements:
+  - pyOpenSSL
+
+httpd_packages:
+  - httpd
+  - mod_ssl
+  - nghttp2.x86_64
+
+httpd_service:
+  - httpd
+
+httpd_server_root:
+  - /etc/httpd
+
+httpd_config_directory:
+  - "{{ httpd_server_root }}/conf.d"
+
+httpd_config_src:
+  - httpd.conf.j2
+
+httpd_config_dest:
+  - "{{ httpd_server_root }}/conf/httpd.conf"
+
+httpd_data_directory:
+  - /var/www/html
+
+httpd_modules_path:
+  - modules
+
+httpd_binary:
+  default: httpd
+

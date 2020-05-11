@@ -1,0 +1,52 @@
+---
+    - name: MariaDB Stop if exist
+      service:
+        name: "mariadb"
+        state: "stopped"
+      ignore_errors: true
+
+    - name: MariaDB killing lingering mysql processes
+      command: "pkill mysqld"
+      become: true
+      ignore_errors: true
+
+    - name: Stat folder /var/lib/mysql
+      stat:
+        path: /var/lib/mysql
+      register: mysql_stat_folder
+
+    - name: Rename old folder /var/lib/mysql
+      file:
+        path: /var/lib/mysql
+        state: absent
+      when: mysql_stat_folder.stat.exists
+
+    - name: Remove Old MariaDB if exist
+      package:
+        name: "{{ mariadb_packages }}"
+        state: absent
+
+    - name: Precreate /etc/my.cnf.d
+      file:
+        path: /etc/my.cnf.d
+        state: directory
+        mode: 0755
+        recurse: yes
+      changed_when: false
+
+    - name: Remove migrated-from-my.cnf-settings.conf that is causing MariaDB to not start
+      file:
+        path: /etc/systemd/system/mariadb.service.d/migrated-from-my.cnf-settings.conf
+        state: absent
+      become: true
+
+    - name: Copy MariaDB Files
+      template:
+        src: "{{ item + '.j2' }}"
+        dest: "{{ '/' + item }}"
+        owner: root
+        group: root
+        mode: 0644
+      become: true
+      with_items:
+        - etc/yum.repos.d/MariaDB.repo

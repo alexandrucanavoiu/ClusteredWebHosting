@@ -1,0 +1,34 @@
+---
+
+# MariaDB Packages
+mariadb_packages:
+  - MariaDB-server
+  - galera-4
+  - MariaDB-client
+  - MariaDB-shared
+  - MariaDB-backup
+  - MariaDB-common
+  - socat
+  - MariaDB-devel
+  - MySQL-python
+
+# Define Ansible group in which the nodes exist to be part of the cluster
+galera_cluster_nodes_group: 'galera_cluster_nodes'
+
+# Define bind address for galera cluster
+galera_cluster_bind_address: "{{ hostvars[inventory_hostname]['ansible_' + galera_cluster_bind_interface]['ipv4']['address'] }}"
+
+# Define the name of the cluster
+galera_cluster_name: 'galeracluster'
+
+# Add the posibility to adjust the LimitNOFILE
+# default: 0 does not tamper LimitNOFILE
+# notice for SystemD: 0 does not mean 'unlimited', use 'infinity' for unlimited
+mariadb_max_open_files: 80235
+
+# Add the posibility to adjust the OOM score
+mariadb_oom_score_adjust: 0
+
+# Defines the which node should be considered the master in the cluster
+# Used to bootstrap cluster
+galera_mysql_master_node: '{{ groups[galera_cluster_nodes_group][0] }}'

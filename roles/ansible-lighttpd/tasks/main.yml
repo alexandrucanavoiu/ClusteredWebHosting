@@ -1,0 +1,44 @@
+---
+- name: Install Lighttpd
+  yum:
+    name:  lighttpd
+    state: present
+  register: lighttpd_install_status
+  until: lighttpd_install_status is succeeded
+  retries: 3
+
+- name: Create a directories if it does not exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: lighttpd
+    group: lighttpd
+    mode: '0755'
+  with_items:
+    - /var/www/lighttpd
+    - /var/cache/lighttpd/compress
+
+- name: Configure lighttpd
+  template:
+    src: etc/lighttpd/lighttpd.conf.j2
+    dest: /etc/lighttpd/lighttpd.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify:
+    - restart lighttpd
+
+- name: Config lighttpd modules
+  template:
+    src: "{{ item + '.j2' }}"
+    dest: "{{ '/' + item }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify:
+    - restart lighttpd
+  with_items:
+    - etc/lighttpd/modules.conf
+    - etc/lighttpd/vhosts.d/vhosts.conf

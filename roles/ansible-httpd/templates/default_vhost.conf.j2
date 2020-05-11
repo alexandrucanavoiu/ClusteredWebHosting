@@ -1,0 +1,16 @@
+<VirtualHost {{ ansible_default_ipv4.address }}:8080>
+   ServerName {{ ansible_default_ipv4.address }}
+   DocumentRoot /var/www/html/
+   ErrorLog /dev/null
+   CustomLog /dev/null combined
+   DirectoryIndex index.html index.htm index.shtml index.php index.php4 index.php5
+    <Directory /var/www/html>
+    Options -Indexes +IncludesNOEXEC +FollowSymLinks
+    Require all granted
+    AllowOverride All
+    </Directory>
+    <FilesMatch "\.(?i:php|php3|php4|php5|php7)$">
+    DirectoryIndex index.php
+    SetHandler "proxy:unix:/var/run/{{ ansible_default_ipv4.address }}.sock|fcgi://127.0.0.1/"
+    </FilesMatch>
+</VirtualHost>

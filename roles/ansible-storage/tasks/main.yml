@@ -1,0 +1,60 @@
+---
+# Create Storage folder
+  - name: Create Storage folder
+    file:
+      path: "{{ item }}"
+      state: directory
+      owner: "{{ primary_domain_user }}"
+      group: "{{ primary_domain_user }}"
+      mode: '0755'
+    with_items:
+      - "{{ storage_path }}/{{ primary_domain_user }}"
+      - "{{ storage_path }}/{{ primary_domain_user }}/public_html"
+
+  - name: NFS ensure a list of packages installed
+    yum:
+       name:
+         - nfs-utils
+         - nfs4-acl-tools
+         - libnfsidmap
+       state: present
+
+  - name: Ensure directories to export exist
+    file: 'path="{{ item.strip().split()[0] }}" state=directory'
+    with_items: "{{ primary_domain_user }}"
+
+  - name: Copy exports file.
+    template:
+      src: exports.j2
+      dest: /etc/exports
+      owner: root
+      group: root
+      mode: 0644
+    notify: reload nfs
+
+  - name: Ensure nfs is running as configured.
+    service:
+      name: nfs
+      state: started
+      enabled: true
+
+  - name: Disable NFSv2, NFSv3, and UDP - Allow NFSv4-only Server
+    template:
+      src: sysconfig.nfs.j2
+      dest: /etc/sysconfig/nfs
+      owner: root
+      group: root
+      mode: 0644
+    notify: restart nfs
+
+  - name: Copy storage_mount file.
+    template:
+      src: storage_mount.j2
+      dest: /etc/init.d/storage_mount
+      owner: root
+      group: root
+      mode: 755
+
+  - name: storage_mount mount
+    shell: /etc/init.d/storage_mount stop && /etc/init.d/storage_mount start
+

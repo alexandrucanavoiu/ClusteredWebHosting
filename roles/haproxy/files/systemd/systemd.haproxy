@@ -1,0 +1,13 @@
+[Unit]
+Description=HAProxy
+After=syslog.target network.target
+
+[Service]
+Type=notify
+EnvironmentFile=/etc/sysconfig/haproxy
+ExecStart=/usr/local/sbin/haproxy -f $CONFIG_FILE -p $PID_FILE $CLI_OPTIONS
+ExecReload=/bin/kill -USR2 $MAINPID
+ExecStop=/bin/kill -USR1 $MAINPID
+
+[Install]
+WantedBy=multi-user.target
