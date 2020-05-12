@@ -19,7 +19,7 @@
   - name: install the package, force upgrade pip
     shell: pip3 install --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 
-  - name: install latest pyOpenSSL if needed
+  - name: install latest pyOpenSSL using pip if needed
     shell: pip3 install pyOpenSSL --trusted-host pypi.org --trusted-host files.pythonhosted.org
 
   - name: remove pyOpenSSL
@@ -37,15 +37,15 @@
     changed_when: false
     register: existing_users
 
-#  - name: Check GUID if exist
-  - fail:
-      msg: "GUID {{ primary_domain_gid }} exists on this server."
-    when: existing_group.stdout != ""
-
-#  - name: Check UID if exist
-  - fail:
-      msg: "UID {{ primary_domain_gid }} exists on this server."
-    when: existing_users.stdout != ""
+##  - name: Check GUID if exist
+#  - fail:
+#      msg: "GUID {{ primary_domain_gid }} exists on this server."
+#    when: existing_group.stdout != ""
+#
+##  - name: Check UID if exist
+#  - fail:
+#      msg: "UID {{ primary_domain_gid }} exists on this server."
+#    when: existing_users.stdout != ""
 
   - name: Disable Firewalld service
     yum:

@@ -1,7 +1,7 @@
 ---
 email_cluster: server@domeniulmeunou.ro
-ansible_local_ip: 192.168.1.246
-admin_local_ip: 192.168.1.150
+ansible_local_ip: 192.168.1.100
+admin_local_ip: 192.168.1.134
 download_path: /root/download_cluster
 primary_domain: domeniulmeunou.ro
 primary_domain_user: domeniulmeunou
@@ -9,7 +9,11 @@ primary_domain_password: domeniulmeunou
 primary_domain_uid: 3030
 primary_domain_gid: 3030
 storage_path: /storage/websites
-nfs_ip_mount: 192.168.1.98
+nfs_ip_mount: 192.168.1.101
+
+# haproxy
+# compile haproxy with lua |  1 = enable / 0 = disable
+compile_haproxy_with_lua: 0
 
 # fpm
 install_php73: 1

@@ -1,6 +1,6 @@
 - hosts: all
-  user: ansible
-  become: true
+  user: root
+  become: false
   gather_facts: yes
   roles:
           - { role: repo-epel, tags: repo-epel }
@@ -13,22 +13,22 @@
   any_errors_fatal: true
 
 - hosts: lb
-  user: ansible
-  become: true
+  user: root
+  become: false
   gather_facts: yes
   roles:
           - { role: haproxy, tags: haproxy }
 
 - hosts: nfs
-  user: ansible
-  become: true
+  user: root
+  become: false
   gather_facts: yes
   roles:
     - { role: ansible-storage, tags: nfs-server }
 
 - hosts: nodes
-  user: ansible
-  become: true
+  user: root
+  become: false
   gather_facts: yes
 #  strategy: free
 #  serial: 2
@@ -39,8 +39,8 @@
     - { role: ansible-lighttpd, tags: lighttpd }
 
 - hosts: galera_cluster_nodes
-  user: ansible
-  become: true
+  user: root
+  become: false
   gather_facts: yes
   roles:
     - { role: ansible-mariadb-galera-cluster, tags: mariadb-galera-cluster }

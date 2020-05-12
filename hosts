@@ -14,8 +14,9 @@
 lb.example.org
 
 [nodes]
-node1.example.org
-node2.example.org
+s1.example.org
+s2.example.org
+s3.example.org
 
 [nfs]
 lb.example.org

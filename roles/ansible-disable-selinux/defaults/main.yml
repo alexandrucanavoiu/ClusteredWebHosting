@@ -1,2 +1,5 @@
 ---
 # defaults file for ansible-disable-selinux
+libselinux_packages:
+  - libselinux-python
+  - libsemanage-python
