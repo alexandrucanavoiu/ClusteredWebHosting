@@ -15,23 +15,20 @@
 - hosts: lb
   user: root
   become: false
-  gather_facts: yes
   roles:
           - { role: haproxy, tags: haproxy }
 
 - hosts: nfs
   user: root
   become: false
-  gather_facts: yes
   roles:
     - { role: ansible-storage, tags: nfs-server }
 
 - hosts: nodes
   user: root
   become: false
-  gather_facts: yes
-#  strategy: free
-#  serial: 2
+  strategy: free
+  serial: 2
   roles:
     - { role: repo-remi, tags: repo-remi }
     - { role: ansible-httpd, tags: httpd }
@@ -41,6 +38,5 @@
 - hosts: galera_cluster_nodes
   user: root
   become: false
-  gather_facts: yes
   roles:
     - { role: ansible-mariadb-galera-cluster, tags: mariadb-galera-cluster }

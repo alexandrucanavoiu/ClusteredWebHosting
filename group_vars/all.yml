@@ -6,8 +6,8 @@ download_path: /root/download_cluster
 primary_domain: domeniulmeunou.ro
 primary_domain_user: domeniulmeunou
 primary_domain_password: domeniulmeunou
-primary_domain_uid: 3030
-primary_domain_gid: 3030
+primary_domain_uid: "3030"
+primary_domain_gid: "3030"
 storage_path: /storage/websites
 nfs_ip_mount: 192.168.1.101
 
@@ -27,7 +27,7 @@ php_fpm_pm_type: 0
 mariadb_version: 10.4
 # Define interface in which to bind
 # ex. eth0|eth1|enp0s3|enp0s8|ens33
-galera_cluster_bind_interface: 'ens33'
+galera_cluster_bind_interface: 'enp0s3'
 # 0 - mariabackup / 1 - rsync
 galera_cluster_sst_method: 0
 galera_cluster_root_password: TfyhHtqDD3dd6hh2MRvxyxx

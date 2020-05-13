@@ -36,7 +36,7 @@
   register: galera_new_cluster_result
 
 - name: Set MariaDB root password
-  command: mysql -e 'ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD("{{ galera_cluster_root_password }}")'
+  shell: mysql -e 'ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD("{{ galera_cluster_root_password }}")'
   when: inventory_hostname == galera_mysql_master_node
   ignore_errors: yes
 
@@ -64,10 +64,3 @@
     name: "mariadb"
     state: "started"
   when: inventory_hostname != galera_mysql_master_node
-
-- name: Update MariaDB root password
-#  login_user: root
-#  login_password: "{{ galera_cluster_root_password }}"
-  command: mysql -e 'ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD("{{ galera_cluster_root_password }}")'
-  when: inventory_hostname == galera_mysql_master_node
-  ignore_errors: yes
