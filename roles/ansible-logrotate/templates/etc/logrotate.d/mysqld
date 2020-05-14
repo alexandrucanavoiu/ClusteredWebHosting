@@ -1,0 +1,7 @@
+/var/log/mysqld.log {
+    daily
+    rotate 5
+    size 100M
+    compress
+    delaycompress
+}

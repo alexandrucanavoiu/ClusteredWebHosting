@@ -37,7 +37,7 @@ COMMIT
 {% endfor %}
 {% endfor %}
 
-#mysqlx
+#mysql
 {% for host in groups['galera_cluster_nodes'] %}
 {% for ip_address_mysql in  hostvars[host]['ansible_all_ipv4_addresses'] %}
 -A Firewall-INPUT -p tcp -s {{ ip_address_mysql }} -j ACCEPT

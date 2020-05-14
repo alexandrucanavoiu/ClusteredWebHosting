@@ -1,0 +1,21 @@
+$SERVER["socket"]=="{{ ansible_default_ipv4.address }}:8081" {
+    server.document-root = "/var/www/html/"
+    expire.url = ( "" => "access 30 days" )
+url.access-deny = ( ".inc", ".php", ".pl", ".fcgi", ".scgi" )
+}
+
+$SERVER["socket"]=="{{ ansible_default_ipv4.address }}:8081" {
+  $HTTP["host"] == "{{ primary_domain }}" {
+    server.document-root = "/home/{{ primary_domain_user }}/public_html/"
+    expire.url = ( "" => "access 30 days" )
+url.access-deny = ( ".inc", ".php", ".pl", ".fcgi", ".scgi" )
+  }
+}
+
+$SERVER["socket"]=="{{ ansible_default_ipv4.address }}:8081" {
+  $HTTP["host"] == "www.{{ primary_domain }}" {
+    server.document-root = "/home/{{ primary_domain_user }}/public_html/"
+    expire.url = ( "" => "access 30 days" )
+url.access-deny = ( ".inc", ".php", ".pl", ".fcgi", ".scgi" )
+  }
+}

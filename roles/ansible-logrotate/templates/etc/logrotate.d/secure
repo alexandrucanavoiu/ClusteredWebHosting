@@ -1,0 +1,7 @@
+/var/log/secure {
+    daily
+    rotate 5
+    size 100M
+    compress
+    delaycompress
+}

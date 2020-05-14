@@ -9,6 +9,7 @@
           - { role: ansible-disable-selinux, tags: disable-selinux }
           - { role: ansible-iptables-services, tags: iptables }
           - { role: ansible-useradd, tags: useradd }
+          - { role: ansible-logrotate, tags: logrotate }
 #          - { role: ansible-rsyslog, tags: rsyslog }
   any_errors_fatal: true
 

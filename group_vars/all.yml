@@ -35,7 +35,7 @@ galera_cluster_mariadbbackup_password: kDyS7Ve93nTHmCg2xyxx
 
 #rsyslog
 ### first server from lb group to receive logs
-rsyslog_remote: 192.168.1.98
+rsyslog_remote: 192.168.1.101
 
 # Set the mode for new directories
 rsyslog_dircreatemode: "0700"

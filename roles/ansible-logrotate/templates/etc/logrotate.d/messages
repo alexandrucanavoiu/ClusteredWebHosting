@@ -1,0 +1,9 @@
+/var/log/messages {
+    daily
+    rotate 3
+    create 0644 root root
+    size=100M
+    compress
+    dateext
+    delaycompress
+}
