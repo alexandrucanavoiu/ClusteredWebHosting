@@ -36,38 +36,36 @@ COMMIT
 -A Firewall-INPUT -p tcp -s {{ ip_address_node }} -j ACCEPT
 {% endfor %}
 {% endfor %}
-
-#mysql
-{% for host in groups['galera_cluster_nodes'] %}
-{% for ip_address_mysql in  hostvars[host]['ansible_all_ipv4_addresses'] %}
--A Firewall-INPUT -p tcp -s {{ ip_address_mysql }} -j ACCEPT
-{% endfor %}
-{% endfor %}
-
-
 {% endif %}
 
 {% if ansible_fqdn in groups['nodes'] %}
 #haproxy
 {% for host in groups['lb'] %}
 {% for ip_address_lb in  hostvars[host]['ansible_all_ipv4_addresses'] %}
--A Firewall-INPUT -p tcp -s {{ ip_address_lb }} -m multiport --dports 8080,8081  -j ACCEPT
+-A Firewall-INPUT -p tcp -s {{ ip_address_lb }} -m multiport --dports 8080  -j ACCEPT
+{% endfor %}
+{% endfor %}
+
+#mysql
+{% for host in groups['galera_cluster_nodes'] %}
+{% for ip_address_mysql in  hostvars[host]['ansible_all_ipv4_addresses'] %}
+-A Firewall-INPUT -p tcp -s {{ ip_address_mysql }} --dport 3306 -j ACCEPT
 {% endfor %}
 {% endfor %}
 {% endif %}
 
 {% if ansible_fqdn in groups['galera_cluster_nodes'] %}
-#mysql
-{% for host in groups['galera_cluster_nodes'] %}
-{% for ip_address_mysql in  hostvars[host]['ansible_all_ipv4_addresses'] %}
--A Firewall-INPUT -p tcp -s {{ ip_address_mysql }} -j ACCEPT
-{% endfor %}
-{% endfor %}
-
 #nodes
 {% for host in groups['nodes'] %}
 {% for ip_address_node in  hostvars[host]['ansible_all_ipv4_addresses'] %}
 -A Firewall-INPUT -p tcp -s {{ ip_address_node }} --dport 3306 -j ACCEPT
+{% endfor %}
+{% endfor %}
+
+#mysql
+{% for host in groups['galera_cluster_nodes'] %}
+{% for ip_address_mysql in  hostvars[host]['ansible_all_ipv4_addresses'] %}
+-A Firewall-INPUT -p tcp -s {{ ip_address_mysql }} -j ACCEPT
 {% endfor %}
 {% endfor %}
 {% endif %}

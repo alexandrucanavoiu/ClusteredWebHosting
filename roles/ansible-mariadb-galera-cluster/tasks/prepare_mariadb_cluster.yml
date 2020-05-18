@@ -34,14 +34,6 @@
         recurse: yes
       changed_when: false
 
-    - name: Create log file /var/log/mysqld.log
-      file:
-        path: /var/log/mysqld.log
-        state: touch
-        mode: '0644'
-        group: mysql
-        owner: mysql
-
     - name: Remove migrated-from-my.cnf-settings.conf that is causing MariaDB to not start
       file:
         path: /etc/systemd/system/mariadb.service.d/migrated-from-my.cnf-settings.conf

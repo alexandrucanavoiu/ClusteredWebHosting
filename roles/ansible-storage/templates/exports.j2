@@ -2,4 +2,9 @@
 {% for ip_address_node in  hostvars[host]['ansible_all_ipv4_addresses'] %}
 /storage/websites/{{ primary_domain_user }} {{ ip_address_node }}(sync,no_root_squash,rw)
 {% endfor %}
+{% if cluster_setup_mode == 3 %}
+{% for ip_address_node in  hostvars[host]['ansible_all_ipv4_addresses'] %}
+/etc/nginx/ssl {{ ip_address_node }}(sync,no_root_squash,rw)
+{% endfor %}
+{% endif %}
 {% endfor %}

@@ -1,4 +1,5 @@
 [{{ ansible_default_ipv4.address }}]
+{% if cluster_setup_mode == 1 %}
 user = apache
 group = apache
 
@@ -6,6 +7,15 @@ listen = /var/run/{{ ansible_default_ipv4.address }}.sock
 listen.allowed_clients = 127.0.0.1
 listen.owner = apache
 listen.group = apache
+{% else %}
+user = nginx
+group = nginx
+
+listen = /var/run/{{ ansible_default_ipv4.address }}.sock
+listen.allowed_clients = 127.0.0.1
+listen.owner = nginx
+listen.group = nginx
+{% endif %}
 
 ; Choose how the process manager will control the number of child processes.
 ; Possible Values:

@@ -1,0 +1,23 @@
+---
+- name: create ssl key for domain {{ primary_domain }}
+  openssl_privatekey:
+    path: "{{ download_path }}/ssl/{{ primary_domain }}.key"
+  register: key
+
+- name: create ssl csr for domain {{ primary_domain }}
+  openssl_csr:
+    path: "{{ download_path }}/ssl/{{ primary_domain }}.csr"
+    privatekey_path: "{{ key.filename }}"
+    common_name: "{{ primary_domain }}"
+  register: csr
+
+- name: create ssl certificates for domain {{ primary_domain }}
+  openssl_certificate:
+    path: "{{ download_path }}/ssl/{{ primary_domain }}.crt"
+    privatekey_path: "{{ csr.privatekey }}"
+    csr_path: "{{ csr.filename }}"
+    provider: selfsigned
+
+- name: combine cert and key {{ primary_domain }} in one file
+  shell:
+    cmd: "cat {{ download_path }}/ssl/{{ primary_domain }}.key {{ download_path }}/ssl/{{ primary_domain }}.crt > /etc/haproxy/ssl/{{ primary_domain }}.keycacrt.crt"

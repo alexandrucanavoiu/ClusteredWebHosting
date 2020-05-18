@@ -1,0 +1,14 @@
+---
+- name: install ntp | ntp-client
+  yum:
+    name: ntp
+    state: present
+  register: ntp_install
+  until: ntp_install is succeeded
+  retries: 3
+
+- name: Enable ntp service | ntp-client
+  systemd:
+    name: ntpd
+    state: restarted
+    enabled: yes

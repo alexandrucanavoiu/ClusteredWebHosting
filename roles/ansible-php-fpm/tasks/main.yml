@@ -58,3 +58,9 @@
       name: "{{ default_php_version }}-php-fpm"
       state: restarted
       enabled: yes
+
+  - name: Add as default {{ default_php_version }}
+    shell: "ln -s /opt/remi/{{ default_php_version }}/root/usr/bin/php /usr/bin/php"
+    args:
+      chdir: "{{ download_path }}/"
+    ignore_errors: yes

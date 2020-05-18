@@ -4,8 +4,13 @@ group = {{ primary_domain_user }}
 
 listen = /var/run/{{ primary_domain }}.sock
 listen.allowed_clients = 127.0.0.1
+{% if cluster_setup_mode == 1 %}
 listen.owner = apache
 listen.group = apache
+{% else %}
+listen.owner = nginx
+listen.group = nginx
+{% endif %}
 
 ; Choose how the process manager will control the number of child processes.
 ; Possible Values:

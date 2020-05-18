@@ -1,0 +1,8 @@
+---
+- import_tasks: nginx-prepare.yml
+
+- import_tasks: nginx-install.yml
+
+- import_tasks: nginx-ssl.yml
+  when: >
+    cluster_setup_mode == 3

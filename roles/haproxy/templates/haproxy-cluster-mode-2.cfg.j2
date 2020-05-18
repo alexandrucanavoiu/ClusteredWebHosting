@@ -50,15 +50,13 @@
                 bind {{ ip_address_lb }}:80
 {% endfor %}
 {% endfor %}
-                default_backend apache_backend
+                default_backend nginx_backend
                 acl cf_cdn_src src -f /etc/haproxy/cloudflare.ip.list
                 http-request set-src hdr(CF-Connecting-IP) if cf_cdn_src
-                acl static_files_default path_end .jpg .jpeg .png .gif .ico .cur .ani .txt .css .js .swf .mov .mp3 .webm .mp4 .woff .ttf .woff2 .svg .eot .otf .xml .txt .html
                 acl url_haswww hdr_beg(host) -i www.
                 acl d1 hdr(host) {{ primary_domain }} www.{{ primary_domain }}
                 http-request redirect prefix https://www.%[hdr(host)] code 301 if !url_haswww  d1
                 http-request redirect scheme https code 301 if url_haswww  d1
-                use_backend lighttpd_backend if static_files_default d1
 
         frontend https-self-in
 {% for host in groups['lb'] %}
@@ -66,32 +64,20 @@
                 bind {{ ip_address_lb }}:443 ssl crt /etc/haproxy/ssl alpn h2,http/1.1
 {% endfor %}
 {% endfor %}
-                default_backend apache_backend
+                default_backend nginx_backend
                 acl cf_cdn_src src -f /etc/haproxy/cloudflare.ip.list
                 http-request set-src hdr(CF-Connecting-IP) if cf_cdn_src
-                acl static_files_default path_end .jpg .jpeg .png .gif .ico .cur .ani .txt .css .js .swf .mov .mp3 .webm .mp4 .woff .ttf .woff2 .svg .eot .otf .xml .txt .html
                 acl url_haswww hdr_beg(host) -i www.
                 acl d1 hdr(host) {{ primary_domain }} www.{{ primary_domain }}
                 http-request redirect prefix https://www.%[hdr(host)] code 301 if !url_haswww  d1
-                http-request redirect scheme https code 301 if url_haswww  d1
-                use_backend lighttpd_backend if static_files_default d1
 
-        backend apache_backend
+        backend nginx_backend
+                option httpchk HEAD /index.html
                 balance roundrobin
                 cookie HAPPIDS1 insert indirect nocache maxidle 60m maxlife 24h
 {% for host in groups['nodes'] %}
 {% set outer_loop = loop %}
 {% for ip_address_node in  hostvars[host]['ansible_all_ipv4_addresses'] %}
                 server s{{ outer_loop.index }} {{ ip_address_node }}:8080 check port 8080 maxconn 50 cookie s{{ outer_loop.index }} maxqueue 300
-{% endfor %}
-{% endfor %}
-
-        backend lighttpd_backend
-                balance roundrobin
-                cookie HAPPIDS2 insert indirect nocache maxidle 60m maxlife 24h
-{% for host in groups['nodes'] %}
-{% set outer_loop = loop %}
-{% for ip_address_node in  hostvars[host]['ansible_all_ipv4_addresses'] %}
-                server s{{ outer_loop.index }} {{ ip_address_node }}:8081 check port 8081 maxconn 50 cookie s{{ outer_loop.index }} maxqueue 300
 {% endfor %}
 {% endfor %}

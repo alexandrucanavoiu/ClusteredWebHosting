@@ -1,0 +1,91 @@
+---
+- name: Nginx prepare | ensure a list of packages installed | nginx-lb
+  yum:
+    name:
+      - pcre
+      - pcre-devel
+      - zlib
+      - wget
+      - libxml2
+      - libxml2-devel
+      - libxslt-devel
+      - libxslt
+      - gcc
+      - wget
+      - make
+      - libaio-devel
+      - pcre-devel
+      - openssl-devel
+      - expat-devel
+      - zlib-devel
+      - libxslt-devel
+      - gd-devel
+      - GeoIP-devel
+      - gperftools-devel
+      - perl-ExtUtils-Embed
+      - git
+      - readline-devel
+      - python-cryptography
+    state: present
+
+- name: Add group nginx
+  group:
+    name: nginx
+    state: present
+
+- name: Add user nginx
+  user:
+    name: nginx
+    shell: "/sbin/nologin"
+    home: "/var/cache/nginx"
+    group: nginx
+    system: yes
+    state: present
+
+- name: Create /var/lib/nginx/tmp/client_body | nginx-lb
+  file:
+    path: "/var/lib/nginx/tmp/client_body"
+    state: directory
+    owner: nginx
+    group: root
+    mode: '0755'
+
+- name: Analyzing the directories to delete...
+  find:
+    paths: "{{ download_path }}"
+    patterns: "nginx-*"
+    use_regex: true
+    file_type: directory
+  register: folders_to_delete
+
+- name: Deleting the directories...
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ folders_to_delete.files }}"
+
+- name: Analyzing the files to delete...
+  find:
+    paths: "{{ download_path }}"
+    patterns: "nginx-*"
+    use_regex: true
+    file_type: file
+  register: files_to_delete
+
+- name: Deleting the directories...
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ files_to_delete.files }}"
+
+- name: Download nginx-{{ nginx_lb_version }} | nginx-lb
+  get_url:
+    url: "https://nginx.org/download/nginx-{{ nginx_lb_version }}.tar.gz"
+    dest: "{{ download_path }}"
+
+- name: Unpacking nginx-{{ nginx_lb_version }} | nginx-lb
+  unarchive:
+    copy: no
+    dest: "{{ download_path }}"
+    src: "{{ download_path }}/nginx-{{ nginx_lb_version }}.tar.gz"
+  register: nginx_lb_version_source_unpack

@@ -1,2 +1,7 @@
 ---
 # handlers file for ansible-iptables-services
+- name: restart iptables
+  service:
+    name: iptables
+    state: restarted
+  become: true

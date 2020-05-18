@@ -1,0 +1,97 @@
+        global
+                nbproc 1
+                daemon
+                maxconn 4096
+                stats socket /tmp/sock1 level admin
+                #user haproxy
+                #group haproxy
+                tune.ssl.default-dh-param 4096
+                ssl-default-bind-ciphers TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+
+
+        defaults
+                log global
+                log        127.0.0.1       local0
+                # use rsyslog rules to forword to a centralized server
+                log        127.0.0.1       local7 debug
+                mode http
+                maxconn 2000
+                option forwardfor
+                option http-server-close
+                option redispatch
+                option abortonclose
+                option prefer-last-server
+                option http-keep-alive
+                option httplog clf
+                # check webservers for health, taking them out of the queue as necessary
+                option httpchk
+                timeout connect 5000ms
+                timeout server 30m
+                timeout client 20s
+                timeout http-keep-alive 15000ms
+                stats enable
+                stats hide-version
+                stats uri /hap-stats
+                stats realm LbStatistics
+                stats auth {{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}:{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}
+                stats refresh 5s
+                #errorfile 400 /etc/haproxy/errors/400.http
+                #errorfile 403 /etc/haproxy/errors/403.http
+                #errorfile 408 /etc/haproxy/errors/408.http
+                #errorfile 500 /etc/haproxy/errors/500.http
+                #errorfile 502 /etc/haproxy/errors/502.http
+                #errorfile 503 /etc/haproxy/errors/503.http
+                #errorfile 504 /etc/haproxy/errors/504.http
+
+
+        frontend http-in
+{% for host in groups['lb'] %}
+{% for ip_address_lb in  hostvars[host]['ansible_all_ipv4_addresses'] %}
+                bind {{ ip_address_lb }}:80
+{% endfor %}
+{% endfor %}
+                default_backend apache_backend
+                acl cf_cdn_src src -f /etc/haproxy/cloudflare.ip.list
+                http-request set-src hdr(CF-Connecting-IP) if cf_cdn_src
+                acl static_files_default path_end .jpg .jpeg .png .gif .ico .cur .ani .txt .css .js .swf .mov .mp3 .webm .mp4 .woff .ttf .woff2 .svg .eot .otf .xml .txt .html
+                acl url_haswww hdr_beg(host) -i www.
+                acl d1 hdr(host) {{ primary_domain }} www.{{ primary_domain }}
+                http-request redirect prefix https://www.%[hdr(host)] code 301 if !url_haswww  d1
+                http-request redirect scheme https code 301 if url_haswww  d1
+                use_backend lighttpd_backend if static_files_default d1
+
+        frontend https-self-in
+{% for host in groups['lb'] %}
+{% for ip_address_lb in  hostvars[host]['ansible_all_ipv4_addresses'] %}
+                bind {{ ip_address_lb }}:443 ssl crt /etc/haproxy/ssl alpn h2,http/1.1
+{% endfor %}
+{% endfor %}
+                default_backend apache_backend
+                acl cf_cdn_src src -f /etc/haproxy/cloudflare.ip.list
+                http-request set-src hdr(CF-Connecting-IP) if cf_cdn_src
+                acl static_files_default path_end .jpg .jpeg .png .gif .ico .cur .ani .txt .css .js .swf .mov .mp3 .webm .mp4 .woff .ttf .woff2 .svg .eot .otf .xml .txt .html
+                acl url_haswww hdr_beg(host) -i www.
+                acl d1 hdr(host) {{ primary_domain }} www.{{ primary_domain }}
+                http-request redirect prefix https://www.%[hdr(host)] code 301 if !url_haswww  d1
+#                http-request redirect scheme https code 301 if url_haswww  d1
+                use_backend lighttpd_backend if static_files_default d1
+
+        backend apache_backend
+                balance roundrobin
+                cookie HAPPIDS1 insert indirect nocache maxidle 60m maxlife 24h
+{% for host in groups['nodes'] %}
+{% set outer_loop = loop %}
+{% for ip_address_node in  hostvars[host]['ansible_all_ipv4_addresses'] %}
+                server s{{ outer_loop.index }} {{ ip_address_node }}:8080 check port 8080 maxconn 50 cookie s{{ outer_loop.index }} maxqueue 300
+{% endfor %}
+{% endfor %}
+
+        backend lighttpd_backend
+                balance roundrobin
+                cookie HAPPIDS2 insert indirect nocache maxidle 60m maxlife 24h
+{% for host in groups['nodes'] %}
+{% set outer_loop = loop %}
+{% for ip_address_node in  hostvars[host]['ansible_all_ipv4_addresses'] %}
+                server s{{ outer_loop.index }} {{ ip_address_node }}:8081 check port 8081 maxconn 50 cookie s{{ outer_loop.index }} maxqueue 300
+{% endfor %}
+{% endfor %}

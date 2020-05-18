@@ -7,6 +7,14 @@
   until: mariadb_packages_install is succeeded
   retries: 3
 
+- name: Create log file /var/log/mysqld.log
+  file:
+    path: /var/log/mysqld.log
+    state: touch
+    mode: '0644'
+    group: mysql
+    owner: mysql
+
 - name: Ensuring mariadb mysql is enabled on boot and started
   service:
     name: "mariadb"

@@ -1,0 +1,38 @@
+#!/bin/sh
+# description: mount required shares
+# chkconfig: 2345 99 00
+
+case "$1" in
+'start')
+        touch /var/lock/subsys/storage_mount
+{% if cluster_setup_mode == 3 %}
+mkdir /home/{{ primary_domain_user }}
+mkdir /etc/nginx/ssl
+mount -o noatime,nodiratime {{ nfs_ip_mount }}:{{ storage_path }}/{{ primary_domain_user }}/ /home/{{ primary_domain_user }}
+mount -o noatime,nodiratime {{ nfs_ip_mount }}:/etc/nginx/ssl/ /etc/nginx/ssl/
+        ;;
+'stop')
+umount -l  /home/{{ primary_domain_user }}/
+umount -l  /etc/nginx/ssl
+        rm -f /var/lock/subsys/storage_mount
+        ;;
+*)
+        echo "Usage: $0 { start | stop }"
+        ;;
+esac
+exit 0
+{% else %}
+mkdir /home/{{ primary_domain_user }}
+mount -o noatime,nodiratime {{ nfs_ip_mount }}:{{ storage_path }}/{{ primary_domain_user }}/ /home/{{ primary_domain_user }}
+        ;;
+'stop')
+umount -l  /home/{{ primary_domain_user }}/
+        rm -f /var/lock/subsys/storage_mount
+        ;;
+*)
+        echo "Usage: $0 { start | stop }"
+        ;;
+esac
+exit 0
+{% endif %}
+

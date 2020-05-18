@@ -1,0 +1,35 @@
+- name: Create download_cluster folder in /root if not exist
+  file:
+    path: "{{ download_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Download composer installer
+  shell: php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+  args:
+    chdir: "{{ download_path }}/"
+
+- name: Get HASH file for composer
+  shell: php -r "if (hash_file('sha384', 'composer-setup.php') === 'e0012edf3e80b6978849f5eff0d4b4e4c79ff1609dd1e613307e16318854d24ae64f26d17af3ef0bf7cfb710ca74755a') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+  args:
+    chdir: "{{ download_path }}/"
+  register: verify_hash_file_composer
+
+- name: Check HASH File Composer
+  fail:
+    msg: "HASH File Composer failed"
+  when: verify_hash_file_composer.stdout != "Installer verified"
+
+- name: Install composer
+  shell: php composer-setup.php --install-dir=/bin/ --filename=composer
+  args:
+    chdir: "{{ download_path }}/"
+  register: verify_install_composer
+
+- name: Check if Composer is installed with success
+  fail:
+    msg: "Composer failed to be installed"
+  when: '"successfully installed" not in verify_install_composer.stdout'
+

@@ -1,0 +1,85 @@
+# For more information on configuration, see:
+#   * Official English Documentation: http://nginx.org/en/docs/
+#   * Official Russian Documentation: http://nginx.org/ru/docs/
+
+user nginx;
+worker_processes auto;
+pid /run/nginx.pid;
+
+# Load dynamic modules. See /usr/share/doc/nginx/README.dynamic.
+include /usr/share/nginx/modules/*.conf;
+load_module /usr/lib64/nginx/modules/ngx_stream_module.so;
+
+events {
+    worker_connections 1024;
+}
+
+stream { include stream.conf; }
+
+http {
+  log_format main      '$remote_addr - $remote_user [$time_local]  '
+    '"$request" $status $bytes_sent '
+    '"$http_referer" "$http_user_agent" '
+    '"$gzip_ratio"';
+
+    sendfile            on;
+    tcp_nopush          on;
+    tcp_nodelay         on;
+    keepalive_timeout   75 20;
+    types_hash_max_size 2048;
+
+    gzip on;
+    gzip_min_length  1100;
+    gzip_buffers     4 8k;
+    gzip_types       text/plain;
+
+    output_buffers   1 32k;
+    postpone_output  1460;
+
+    server_tokens off;
+
+    include             /etc/nginx/proxy.conf;
+    include             /etc/nginx/mime.types;
+#    include             /etc/nginx/fastcgi.conf;
+    default_type        application/octet-stream;
+
+    server {
+    {% if cluster_setup_mode == 3 %}
+            listen       {{ ansible_default_ipv4.address }}:80;
+    {% endif %}
+    {% if cluster_setup_mode == 2 %}
+            listen       {{ ansible_default_ipv4.address }}:8080;
+    {% endif %}
+
+        server_name  {{ ansible_default_ipv4.address }};
+        root         /var/www/nginx;
+
+
+      error_log /var/log/nginx/error.log;
+      #access_log  logs/access.log  main;
+
+      # Load configuration files for the default server block.
+
+      client_max_body_size       100m;
+      client_body_buffer_size    128k;
+
+      location ~* \.php$ {
+        fastcgi_pass unix:/var/run/{{ ansible_default_ipv4.address }}.sock;
+        include         fastcgi_params;
+        fastcgi_param   SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+        fastcgi_param   SCRIPT_NAME        $fastcgi_script_name;
+      }
+
+        location ~* ^.+\.(jpg|jpeg|gif|png)$ {
+          access_log   off;
+          expires      30d;
+        }
+
+    }
+
+    # Load modular configuration files from the /etc/nginx/conf.d directory.
+    # See http://nginx.org/en/docs/ngx_core_module.html#include
+    # for more information.
+    include /etc/nginx/conf.d/*.conf;
+
+}

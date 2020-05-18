@@ -1,78 +1,67 @@
 ---
 # tasks file for ansible-httpd
-  - name: install requirements
-    yum:
-      name: "{{ httpd_requirements }}"
-      state: present
-    register: httpd_install_requirements
-    until: httpd_install_requirements is succeeded
-    retries: 3
+- name: install requirements | httpd
+  yum:
+    name: "{{ httpd_requirements }}"
+    state: present
+  register: httpd_install_requirements
+  until: httpd_install_requirements is succeeded
+  retries: 3
 
-  - name: install apache httpd
-    package:
-      name: "{{ httpd_packages }}"
-      state: present
-    register: httpd_install_apache_httpd
-    until: httpd_install_apache_httpd is succeeded
-    retries: 3
+- name: install apache | httpd
+  package:
+    name: "{{ httpd_packages }}"
+    state: present
+  register: httpd_install_apache_httpd
+  until: httpd_install_apache_httpd is succeeded
+  retries: 3
 
-  - name: httpd find config file example for delete
-    find:
-      paths: /etc/httpd/conf.d/
-      patterns: "*.conf"
-    register: wildcard_httpd_files_to_delete
+- name: httpd find config file example for delete | httpd
+  find:
+    paths: /etc/httpd/conf.d/
+    patterns: "*.conf"
+  register: wildcard_httpd_files_to_delete
 
-  - name: httpd remove file wildcard
-    file:
-      path: "{{ item.path }}"
-      state: absent
-    with_items: "{{ wildcard_httpd_files_to_delete.files }}"
+- name: httpd remove file wildcard | httpd
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ wildcard_httpd_files_to_delete.files }}"
 
-  - name: Copy httpd.conf file
-    template:
-        src: httpd.conf.j2
-        dest: /etc/httpd/conf/httpd.conf
-        owner: root
-        group: root
-        mode: '0600'
-
-  - name: Copy index.html default file
-    template:
-      src: index.html.j2
-      dest: /var/www/html/index.html
-      owner: apache
-      group: apache
-      mode: '0600'
-
-  - name: Copy default_vhost.conf file to /etc/httpd/conf/conf.d/
-    template:
-      src: default_vhost.conf.j2
-      dest: /etc/httpd/conf.d/000-default-vhost.conf
+- name: Copy httpd.conf file | httpd
+  template:
+      src: httpd.conf.j2
+      dest: /etc/httpd/conf/httpd.conf
       owner: root
       group: root
       mode: '0600'
 
-  - name: Copy {{ primary_domain}}.conf file to /etc/httpd/conf/conf.d/
-    template:
-      src: primary_domain.conf.j2
-      dest: "/etc/httpd/conf.d/001-{{ primary_domain }}.conf"
-      owner: root
-      group: root
-      mode: '0600'
+- name: Copy index.html default file | httpd
+  template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+    owner: apache
+    group: apache
+    mode: '0600'
 
-  - name: Copy storage_mount file.
-    template:
-      src: storage_mount.j2
-      dest: /etc/init.d/storage_mount
-      owner: root
-      group: root
-      mode: 755
+- name: Copy default_vhost.conf file to /etc/httpd/conf/conf.d/ | httpd
+  template:
+    src: default_vhost.conf.j2
+    dest: /etc/httpd/conf.d/000-default-vhost.conf
+    owner: root
+    group: root
+    mode: '0600'
 
-  - name: storage_mount mount
-    shell: /etc/init.d/storage_mount stop && /etc/init.d/storage_mount start
+- name: Copy {{ primary_domain}}.conf file to /etc/httpd/conf/conf.d/ | httpd
+  template:
+    src: primary_domain.conf.j2
+    dest: "/etc/httpd/conf.d/001-{{ primary_domain }}.conf"
+    owner: root
+    group: root
+    mode: '0600'
 
-  - name: Enable httpd service
-    systemd:
-      name: httpd
-      state: restarted
-      enabled: yes
+- name: Enable httpd service
+  systemd:
+    name: httpd
+    state: restarted
+    enabled: yes

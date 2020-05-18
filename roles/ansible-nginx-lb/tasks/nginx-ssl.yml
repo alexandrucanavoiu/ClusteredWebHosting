@@ -1,0 +1,34 @@
+---
+- name: Create ssl folder in /etc/nginx/ssl/
+  file:
+    path: "/etc/nginx/ssl"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: create ssl key for domain {{ primary_domain }}
+  openssl_privatekey:
+    path: "/etc/nginx/ssl/{{ primary_domain }}.key"
+  register: key
+
+- name: create ssl csr for domain {{ primary_domain }}
+  openssl_csr:
+    path: "/etc/nginx/ssl/{{ primary_domain }}.csr"
+    privatekey_path: "{{ key.filename }}"
+    common_name: "{{ primary_domain }}"
+  register: csr
+
+- name: create ssl certificates for domain {{ primary_domain }}
+  openssl_certificate:
+    path: "/etc/nginx/ssl/{{ primary_domain }}.crt"
+    privatekey_path: "{{ csr.privatekey }}"
+    csr_path: "{{ csr.filename }}"
+    provider: selfsigned
+
+- name: Change CRT/KEY permissions to 600 | nginx-lb
+  file:
+    dest: "{{ item }}"
+    mode: '0600'
+  with_fileglob:
+    - '/etc/nginx/ssl/*'

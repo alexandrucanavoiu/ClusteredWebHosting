@@ -1,0 +1,4 @@
+---
+- import_tasks: nginx-prepare.yml
+
+- import_tasks: nginx-install.yml

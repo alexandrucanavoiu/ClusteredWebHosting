@@ -1,0 +1,33 @@
+---
+- name: Copy IPtables file for Cluster Setup Mode 1
+  template:
+    src: iptables-cluster-setup-mode-1.j2
+    dest: /etc/sysconfig/iptables
+    owner: root
+    group: root
+    mode: '0600'
+  when: cluster_setup_mode == 1
+  notify:
+    - restart iptables
+
+- name: Copy IPtables file for Cluster Setup Mode 2
+  template:
+    src: iptables-cluster-setup-mode-2.j2
+    dest: /etc/sysconfig/iptables
+    owner: root
+    group: root
+    mode: '0600'
+  when: cluster_setup_mode == 2
+  notify:
+    - restart iptables
+
+- name: Copy IPtables file for Cluster Setup Mode 3
+  template:
+    src: iptables-cluster-setup-mode-3.j2
+    dest: /etc/sysconfig/iptables
+    owner: root
+    group: root
+    mode: '0600'
+  when: cluster_setup_mode == 3
+  notify:
+    - restart iptables
