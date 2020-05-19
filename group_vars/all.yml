@@ -17,6 +17,8 @@ nfs_ip_mount: 192.168.1.101
 # 2 = (Load Balancer) Haproxy -> (Nodes) Nginx
 # 3 = (Load Balancer) Nginx -> (Nodes) Nginx
 cluster_setup_mode: 2
+
+#nginx
 nginx_lb_version: 1.18.0
 
 # haproxy
@@ -43,6 +45,11 @@ galera_cluster_bind_interface: 'enp0s3'
 galera_cluster_sst_method: 0
 galera_cluster_root_password: TfyhHtqDD3dd6hh2MRvxyxx
 galera_cluster_mariadbbackup_password: kDyS7Ve93nTHmCg2xyxx
+
+# Phpmyadmin
+phpmyadmin_version: 5.0.2
+phpmyadmin_auth_user: "alexandru"
+phpmyadmin_auth_password: "ourphpmyadminpassword"
 
 #rsyslog
 ### first server from lb group to receive logs

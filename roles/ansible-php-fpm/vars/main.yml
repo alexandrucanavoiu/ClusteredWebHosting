@@ -132,3 +132,5 @@ php74_version:
   - php74-php-memcached
   - php74-php-openssl
   - php74-php-zip
+
+group_owner_lib_php: '{{ "nginx" if cluster_setup_mode == 2 or cluster_setup_mode == 3 else "apache" }}'

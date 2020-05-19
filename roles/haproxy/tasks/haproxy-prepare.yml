@@ -1,109 +1,110 @@
 ---
-- name: Download & Unarchive haproxy-{{ haproxy_version_major_mirror_patch }}.tar.gz
-  unarchive:
-    src: "http://www.haproxy.org/download/{{ haproxy_version_major_mirror }}/src/haproxy-{{ haproxy_version_major_mirror_patch }}.tar.gz"
-    dest: "{{ download_path }}"
-    remote_src: yes
-
-- name: Haproxy ensure a list of packages installed
-  yum:
-    name:
-      - pcre-devel
-      - readline-devel
-      - python-cryptography
-    state: present
-
-    # haproxy prepare
-- name: Check if {{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }} exist.
-  stat:
-     path: "{{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }}"
-  register: haproxy_folder
-
-- name: Delete folder haproxy-{{ haproxy_version_major_mirror_patch }} if exist in {{ download_path }}
-  file:
-     path: "{{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }}"
-     state: absent
-  when: haproxy_folder.stat.exists == true
-
-- name: Download {{ haproxy_version }}
-  get_url:
-     url: "http://www.haproxy.org/download/{{ haproxy_version_major_mirror }}/src/haproxy-{{ haproxy_version_major_mirror_patch }}.tar.gz"
-     dest: "{{ download_path }}"
-  register: haproxy_source
-
-- name: Unpacking HAProxy
-  unarchive:
-     copy: no
-     dest: "{{ download_path }}"
-     src: "{{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }}.tar.gz"
-  register: haproxy_source_unpack
-
-    # LUA prepare
-
-- name: Check if {{ download_path }}/{{ lua_version }} exist.
-  stat:
-    path: "{{ download_path }}/{{ lua_version }}"
-  register: lua_folder
-  when: compile_haproxy_with_lua == 1
-
-- name: Delete folder {{ lua_version }} if exist in {{ download_path }}
-  file:
-    path: "{{ download_path }}/{{ lua_version }}"
-    state: absent
-  when: compile_haproxy_with_lua == 1 and lua_folder.stat.exists == true
-
-- name: Download {{ lua_version }}
-  get_url:
-    url: "http://www.lua.org/ftp/{{ lua_version }}.tar.gz"
-    dest: "{{ download_path }}"
-  register: lua_source
-  when: compile_haproxy_with_lua == 1
-
-- name: Unpacking LUA
-  unarchive:
-    copy: no
-    dest: "{{ download_path }}"
-    src: "{{ download_path }}/{{ lua_version }}.tar.gz"
-  register: lua_source_unpack
-  when: compile_haproxy_with_lua == 1
-
-# LUA Compile
-- name: Run 'make linux test && make install' - {{ lua_version }}
-  shell: make linux test && make install
-  args:
-    chdir: "{{ download_path }}/{{ lua_version }}"
-  when: lua_source_unpack is changed and compile_haproxy_with_lua == 1
-  register: lua_configure
-
-# HAProxy Compile with LUA
-- name: Run make & make install | haproxy-{{ haproxy_version_major_mirror_patch }}
-  shell: make -j $(nproc) TARGET=linux-glibc USE_OPENSSL=1 USE_ZLIB=1 USE_LUA=1 USE_PCRE=1 USE_SYSTEMD=1 && make install
-  args:
-    chdir: "{{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }}"
-  when: haproxy_source_unpack is changed and compile_haproxy_with_lua == 1
-  register: haproxy_configure
-
-# HAProxy Compile without LUA
-- name: Run make & make install | haproxy-{{ haproxy_version_major_mirror_patch }}
-  shell: make -j $(nproc) TARGET=linux-glibc USE_OPENSSL=1 USE_ZLIB=1 USE_PCRE=1 USE_SYSTEMD=1 && make install
-  args:
-    chdir: "{{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }}"
-  when: haproxy_source_unpack is changed and compile_haproxy_with_lua == 0
-  register: haproxy_configure
-
-# Create haproxy folders
-- name: Create haproxy folders in /etc
-  file:
-    path: "{{ item }}"
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-  with_items:
-    - /etc/haproxy
-    - /etc/haproxy/ssl
-    - /etc/haproxy/errors
-    - "{{ download_path }}/ssl"
+#- name: Download & Unarchive haproxy-{{ haproxy_version_major_mirror_patch }}.tar.gz
+#  unarchive:
+#    src: "http://www.haproxy.org/download/{{ haproxy_version_major_mirror }}/src/haproxy-{{ haproxy_version_major_mirror_patch }}.tar.gz"
+#    dest: "{{ download_path }}"
+#    remote_src: yes
+#
+#- name: Haproxy ensure a list of packages installed
+#  yum:
+#    name:
+#      - pcre-devel
+#      - readline-devel
+#      - python-cryptography
+#      - expect
+#    state: present
+#
+#    # haproxy prepare
+#- name: Check if {{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }} exist.
+#  stat:
+#     path: "{{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }}"
+#  register: haproxy_folder
+#
+#- name: Delete folder haproxy-{{ haproxy_version_major_mirror_patch }} if exist in {{ download_path }}
+#  file:
+#     path: "{{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }}"
+#     state: absent
+#  when: haproxy_folder.stat.exists == true
+#
+#- name: Download {{ haproxy_version }}
+#  get_url:
+#     url: "http://www.haproxy.org/download/{{ haproxy_version_major_mirror }}/src/haproxy-{{ haproxy_version_major_mirror_patch }}.tar.gz"
+#     dest: "{{ download_path }}"
+#  register: haproxy_source
+#
+#- name: Unpacking HAProxy
+#  unarchive:
+#     copy: no
+#     dest: "{{ download_path }}"
+#     src: "{{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }}.tar.gz"
+#  register: haproxy_source_unpack
+#
+#    # LUA prepare
+#
+#- name: Check if {{ download_path }}/{{ lua_version }} exist.
+#  stat:
+#    path: "{{ download_path }}/{{ lua_version }}"
+#  register: lua_folder
+#  when: compile_haproxy_with_lua == 1
+#
+#- name: Delete folder {{ lua_version }} if exist in {{ download_path }}
+#  file:
+#    path: "{{ download_path }}/{{ lua_version }}"
+#    state: absent
+#  when: compile_haproxy_with_lua == 1 and lua_folder.stat.exists == true
+#
+#- name: Download {{ lua_version }}
+#  get_url:
+#    url: "http://www.lua.org/ftp/{{ lua_version }}.tar.gz"
+#    dest: "{{ download_path }}"
+#  register: lua_source
+#  when: compile_haproxy_with_lua == 1
+#
+#- name: Unpacking LUA
+#  unarchive:
+#    copy: no
+#    dest: "{{ download_path }}"
+#    src: "{{ download_path }}/{{ lua_version }}.tar.gz"
+#  register: lua_source_unpack
+#  when: compile_haproxy_with_lua == 1
+#
+## LUA Compile
+#- name: Run 'make linux test && make install' - {{ lua_version }}
+#  shell: make linux test && make install
+#  args:
+#    chdir: "{{ download_path }}/{{ lua_version }}"
+#  when: lua_source_unpack is changed and compile_haproxy_with_lua == 1
+#  register: lua_configure
+#
+## HAProxy Compile with LUA
+#- name: Run make & make install | haproxy-{{ haproxy_version_major_mirror_patch }}
+#  shell: make -j $(nproc) TARGET=linux-glibc USE_OPENSSL=1 USE_ZLIB=1 USE_LUA=1 USE_PCRE=1 USE_SYSTEMD=1 && make install
+#  args:
+#    chdir: "{{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }}"
+#  when: haproxy_source_unpack is changed and compile_haproxy_with_lua == 1
+#  register: haproxy_configure
+#
+## HAProxy Compile without LUA
+#- name: Run make & make install | haproxy-{{ haproxy_version_major_mirror_patch }}
+#  shell: make -j $(nproc) TARGET=linux-glibc USE_OPENSSL=1 USE_ZLIB=1 USE_PCRE=1 USE_SYSTEMD=1 && make install
+#  args:
+#    chdir: "{{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }}"
+#  when: haproxy_source_unpack is changed and compile_haproxy_with_lua == 0
+#  register: haproxy_configure
+#
+## Create haproxy folders
+#- name: Create haproxy folders in /etc
+#  file:
+#    path: "{{ item }}"
+#    state: directory
+#    owner: root
+#    group: root
+#    mode: '0755'
+#  with_items:
+#    - /etc/haproxy
+#    - /etc/haproxy/ssl
+#    - /etc/haproxy/errors
+#    - "{{ download_path }}/ssl"
 
 - name: copy default haproxy files
   copy:
@@ -129,3 +130,12 @@
   copy:
     src: "files/systemd/sysconfig.haproxy"
     dest: /etc/sysconfig/haproxy
+
+- name: Generate password for Auth
+  shell: python -c 'import crypt; print crypt.crypt("{{ phpmyadmin_auth_password }}", "$6$94848fj487844")'
+  args:
+    chdir: "{{ download_path }}"
+  register: command_output_passwd_auth_phpmyadmin
+
+- set_fact:
+    passwd_auth_phpmyadmin: "{{ command_output_passwd_auth_phpmyadmin.stdout }}"

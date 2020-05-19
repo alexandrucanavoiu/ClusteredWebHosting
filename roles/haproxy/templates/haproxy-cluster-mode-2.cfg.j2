@@ -43,6 +43,10 @@
                 #errorfile 503 /etc/haproxy/errors/503.http
                 #errorfile 504 /etc/haproxy/errors/504.http
 
+        userlist UsersAuth
+                group admin users {{ phpmyadmin_auth_user }}
+                user {{ phpmyadmin_auth_user }} password {{ passwd_auth_phpmyadmin }}
+
 
         frontend http-in
 {% for host in groups['lb'] %}
@@ -55,6 +59,12 @@
                 http-request set-src hdr(CF-Connecting-IP) if cf_cdn_src
                 acl url_haswww hdr_beg(host) -i www.
                 acl d1 hdr(host) {{ primary_domain }} www.{{ primary_domain }}
+
+                # /phpmyadmin path
+                acl is_ip req.hdr(host) -m ip 0.0.0.0/0
+                acl phpmyadmin_path path_beg -i /phpmyadmin
+                acl AuthOkay_phpmyadmin http_auth(UsersAuth)
+                http-request auth realm AuthYourself if is_ip phpmyadmin_path !AuthOkay_phpmyadmin
                 http-request redirect prefix https://www.%[hdr(host)] code 301 if !url_haswww  d1
                 http-request redirect scheme https code 301 if url_haswww  d1
 
@@ -66,9 +76,16 @@
 {% endfor %}
                 default_backend nginx_backend
                 acl cf_cdn_src src -f /etc/haproxy/cloudflare.ip.list
-                http-request set-src hdr(CF-Connecting-IP) if cf_cdn_src
                 acl url_haswww hdr_beg(host) -i www.
                 acl d1 hdr(host) {{ primary_domain }} www.{{ primary_domain }}
+
+                # /phpmyadmin path
+                acl is_ip req.hdr(host) -m ip 0.0.0.0/0
+                acl phpmyadmin_path path_beg -i /phpmyadmin
+                acl AuthOkay_phpmyadmin http_auth(UsersAuth)
+
+                http-request auth realm AuthYourself if is_ip phpmyadmin_path !AuthOkay_phpmyadmin
+                http-request set-src hdr(CF-Connecting-IP) if cf_cdn_src
                 http-request redirect prefix https://www.%[hdr(host)] code 301 if !url_haswww  d1
 
         backend nginx_backend

@@ -40,6 +40,7 @@
     - { role: ansible-php-fpm, tags: php-fpm }
     - { role: ansible-lighttpd, when: cluster_setup_mode == 1, tags: lighttpd }
     - { role: ansible-composer-tool, tags: composer-tool }
+    - { role: ansible-phpmyadmin, tags: phpmyadmin }
 
 - hosts: galera_cluster_nodes
   user: root
