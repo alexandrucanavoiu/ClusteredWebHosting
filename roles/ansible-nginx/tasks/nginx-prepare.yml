@@ -121,6 +121,16 @@
     state: absent
   with_items: "{{ files_to_delete.files }}"
 
+- name: Generate .htpasswd password for user {{ phpmyadmin_auth_user }} | nginx
+  shell: openssl passwd -apr1 -in <(printf "{{ phpmyadmin_auth_password }}")
+  args:
+    executable: /bin/bash
+    chdir: "{{ download_path }}"
+  register: command_output_passwd_auth_phpmyadmin
+
+- set_fact:
+    passwd_auth_phpmyadmin: "{{ command_output_passwd_auth_phpmyadmin.stdout }}"
+
 - name: Download nginx-{{ nginx_lb_version }} | nginx
   get_url:
     url: "https://nginx.org/download/nginx-{{ nginx_lb_version }}.tar.gz"

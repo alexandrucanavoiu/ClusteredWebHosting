@@ -40,7 +40,7 @@ http {
 
     include             /etc/nginx/proxy.conf;
     include             /etc/nginx/mime.types;
-#    include             /etc/nginx/fastcgi.conf;
+#    include            /etc/nginx/fastcgi.conf;
     default_type        application/octet-stream;
 
     server {
@@ -55,16 +55,38 @@ http {
         root         /var/www/nginx;
         index          index.html index.htm index.shtml index.php index.php4 index.php5;
 
+{% if cluster_setup_mode == 3 %}
+    location / {
+
+        satisfy any;
+        allow 127.0.0.1;
+        deny all;
+
+        try_files $uri $uri/ /index.php?$query_string;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /var/www/.htpasswd;
+    }
+{% else %}
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+{% endif %}
 
       error_log /var/log/nginx/error.log;
       #access_log  logs/access.log  main;
 
       # Load configuration files for the default server block.
 
-      client_max_body_size       100m;
+      client_max_body_size       10m;
       client_body_buffer_size    128k;
 
+    if (!-d $request_filename) {
+        rewrite     ^/(.+)/$ /$1 permanent;
+    }
+
       location ~* \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
         fastcgi_pass unix:/var/run/{{ ansible_default_ipv4.address }}.sock;
         include         fastcgi_params;
         fastcgi_param   SCRIPT_FILENAME    $document_root$fastcgi_script_name;

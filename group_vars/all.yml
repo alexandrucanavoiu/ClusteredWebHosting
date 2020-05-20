@@ -16,7 +16,7 @@ nfs_ip_mount: 192.168.1.101
 # 1 = (Load Balancer) Haproxy -> (Nodes) Apache + Lighttpd
 # 2 = (Load Balancer) Haproxy -> (Nodes) Nginx
 # 3 = (Load Balancer) Nginx -> (Nodes) Nginx
-cluster_setup_mode: 2
+cluster_setup_mode: 3
 
 #nginx
 nginx_lb_version: 1.18.0

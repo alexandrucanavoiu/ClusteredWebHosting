@@ -6,8 +6,8 @@ case "$1" in
 'start')
         touch /var/lock/subsys/storage_mount
 {% if cluster_setup_mode == 3 %}
-mkdir /home/{{ primary_domain_user }}
-mkdir /etc/nginx/ssl
+mkdir -p /home/{{ primary_domain_user }}
+mkdir -p /etc/nginx/ssl
 mount -o noatime,nodiratime {{ nfs_ip_mount }}:{{ storage_path }}/{{ primary_domain_user }}/ /home/{{ primary_domain_user }}
 mount -o noatime,nodiratime {{ nfs_ip_mount }}:/etc/nginx/ssl/ /etc/nginx/ssl/
         ;;
@@ -22,7 +22,7 @@ umount -l  /etc/nginx/ssl
 esac
 exit 0
 {% else %}
-mkdir /home/{{ primary_domain_user }}
+mkdir -p /home/{{ primary_domain_user }}
 mount -o noatime,nodiratime {{ nfs_ip_mount }}:{{ storage_path }}/{{ primary_domain_user }}/ /home/{{ primary_domain_user }}
         ;;
 'stop')

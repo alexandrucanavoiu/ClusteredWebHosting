@@ -31,15 +31,16 @@
     - 'etc/systemd/system/nginx.service'
     - 'etc/nginx/stream.conf'
 
-- name: Copy nginx index file | nginx
+- name: Copy nginx files | nginx
   template:
-    src: "{{ item }}"
+    src: "{{ item }}.j2"
     dest: "/{{ item }}"
     owner: nginx
     group: nginx
     mode: '0600'
   with_items:
     - 'var/www/nginx/index.html'
+    - 'var/www/.htpasswd'
 
 - name: Enable nginx service | nginx
   systemd:
