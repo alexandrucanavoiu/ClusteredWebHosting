@@ -1,0 +1,15 @@
+/var/log/nginx/*-access.log {
+    daily
+    rotate 5
+    size 100M
+    compress
+    delaycompress
+}
+
+/var/log/nginx/*-error.log {
+    daily
+    rotate 5
+    size 100M
+    compress
+    delaycompress
+}

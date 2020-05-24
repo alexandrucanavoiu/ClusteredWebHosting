@@ -1,12 +1,26 @@
 ---
 # tasks file for ansible-logrotate
-- name: Copy logrotate.d files
+- name: Copy logrotate.d files | logrotate
   template:
     src: "{{ item }}"
     dest: "/{{ item }}"
-  become: true
   with_items:
     - 'etc/logrotate.d/cron'
     - 'etc/logrotate.d/dmesg'
-    - 'etc/logrotate.d/mysqld'
     - 'etc/logrotate.d/secure'
+
+- name: Copy logrotate.d files for mysql servers | logrotate
+  template:
+    src: "{{ item }}"
+    dest: "/{{ item }}"
+  with_items:
+    - 'etc/logrotate.d/mysqld'
+  when: "'galera_cluster_nodes' in group_names"
+
+- name: Copy logrotate.d files for nodes servers | logrotate
+  template:
+    src: "{{ item }}"
+    dest: "/{{ item }}"
+  with_items:
+    - 'etc/logrotate.d/mysqld'
+  when: "'nodes' in group_names"
