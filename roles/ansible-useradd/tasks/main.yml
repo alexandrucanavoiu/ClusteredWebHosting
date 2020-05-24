@@ -11,5 +11,6 @@
       uid: "{{ primary_domain_uid }}"
       shell: "/bin/false"
       home: "/home/{{ primary_domain_user }}"
+      create_home: no
       group: "{{ primary_domain_gid }}"
       state: present

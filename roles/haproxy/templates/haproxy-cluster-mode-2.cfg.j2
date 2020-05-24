@@ -56,7 +56,6 @@
 {% endfor %}
                 default_backend nginx_backend
                 acl cf_cdn_src src -f /etc/haproxy/cloudflare.ip.list
-                http-request set-src hdr(CF-Connecting-IP) if cf_cdn_src
                 acl url_haswww hdr_beg(host) -i www.
                 acl d1 hdr(host) {{ primary_domain }} www.{{ primary_domain }}
 
@@ -64,9 +63,15 @@
                 acl is_ip req.hdr(host) -m ip 0.0.0.0/0
                 acl phpmyadmin_path path_beg -i /phpmyadmin
                 acl AuthOkay_phpmyadmin http_auth(UsersAuth)
+
+                # certbot
+                acl letsencrypt-req path_beg /.well-known/acme-challenge/
+
+                http-request set-src hdr(CF-Connecting-IP) if cf_cdn_src
                 http-request auth realm AuthYourself if is_ip phpmyadmin_path !AuthOkay_phpmyadmin
                 http-request redirect prefix https://www.%[hdr(host)] code 301 if !url_haswww  d1
                 http-request redirect scheme https code 301 if url_haswww  d1
+                use_backend letsencrypt if letsencrypt-req
 
         frontend https-self-in
 {% for host in groups['lb'] %}
@@ -84,9 +89,13 @@
                 acl phpmyadmin_path path_beg -i /phpmyadmin
                 acl AuthOkay_phpmyadmin http_auth(UsersAuth)
 
+                # certbot
+                acl letsencrypt-req path_beg /.well-known/acme-challenge/
+
                 http-request auth realm AuthYourself if is_ip phpmyadmin_path !AuthOkay_phpmyadmin
                 http-request set-src hdr(CF-Connecting-IP) if cf_cdn_src
                 http-request redirect prefix https://www.%[hdr(host)] code 301 if !url_haswww  d1
+                use_backend letsencrypt if letsencrypt-req
 
         backend nginx_backend
                 option httpchk HEAD /index.html
@@ -98,3 +107,6 @@
                 server s{{ outer_loop.index }} {{ ip_address_node }}:8080 check port 8080 maxconn 50 cookie s{{ outer_loop.index }} maxqueue 300
 {% endfor %}
 {% endfor %}
+
+        backend letsencrypt
+                server letsencrypt 127.0.0.1:9785

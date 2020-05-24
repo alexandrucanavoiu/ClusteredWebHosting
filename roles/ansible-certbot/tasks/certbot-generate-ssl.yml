@@ -1,0 +1,59 @@
+---
+- name: Install CertBot
+  block:
+    - name: Allow incoming TCP PORT 9785 temporary | certbot
+      iptables:
+        chain: Firewall-INPUT
+        source: 0.0.0.0/0
+        protocol: tcp
+        match: tcp
+        destination_port: "9785"
+        jump: ACCEPT
+
+    - name: Generate SSL for {{ primary_domain }} | certbot
+      shell: "certbot certonly --standalone --agree-tos --non-interactive -m {{ email_cluster }} -d {{ primary_domain }},www.{{ primary_domain }} --preferred-challenges http --http-01-port 9785"
+      args:
+        chdir: "{{ download_path }}"
+      register: command_output_generate_ssl_with_certbot
+
+    - name: Generate SSL for {{ primary_domain }} | certbot
+      shell: "certbot certonly --standalone --agree-tos --non-interactive -m {{ email_cluster }} -d {{ primary_domain }},www.{{ primary_domain }} --preferred-challenges http --http-01-port 9785"
+      args:
+        chdir: "{{ download_path }}"
+      register: command_output_generate_ssl_with_certbot
+
+    - name: "Debug SSL Let's Encrypt"
+      debug:
+        msg: "{{ command_output_generate_ssl_with_certbot }}"
+
+    - name: Check SSL Certbot | certbot
+      fail:
+        msg: "Certbot: Generate SSL failed"
+      failed_when: '"Congratulations" not in command_output_generate_ssl_with_certbot.stdout or "Keeping the existing certificate" not in command_output_generate_ssl_with_certbot.stdout'
+
+    - name: Combine Key & Cert in one file | certbot
+      shell: "cat /etc/letsencrypt/live/{{ primary_domain }}/fullchain.pem /etc/letsencrypt/live/{{ primary_domain }}/privkey.pem | tee /etc/haproxy/ssl/{{ primary_domain }}.crtkey.crt"
+      args:
+        chdir: "{{ download_path }}"
+      notify:
+        - restart haproxy
+        - restart iptables
+
+  rescue:
+      - name: Remove Certbot package | certbot
+        yum:
+           name:  certbot
+           state: absent
+        notify: restart iptables
+      - name: Remove folder Let's Encrypt | certbot
+        file:
+          path: /etc/letsencrypt
+          state: absent
+      - name: Remove Let's Encrypt from haproxy | certbot
+        file:
+          path: "/etc/haproxy/ssl/{{ primary_domain }}.crtkey.crt"
+          state: absent
+      - name: Remove Let's Encrypt Logs | certbot
+        file:
+          path: "/var/log/letsencrypt"
+          state: absent

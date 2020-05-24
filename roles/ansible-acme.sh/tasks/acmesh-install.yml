@@ -1,0 +1,34 @@
+---
+- name: Download and Install acme.sh | acme.sh
+  shell: curl https://get.acme.sh | sh
+  args:
+    chdir: "{{ download_path }}"
+  register: command_output_install_acme_sh
+
+- name: Debug acme.sh install | acme.sh
+  debug:
+    msg: "{{ command_output_install_acme_sh }}"
+
+- name: Check if acme.sh was been installed with success | acme.sh
+  fail:
+    msg: "acme.sh: install failed"
+  failed_when: '"success" not in command_output_install_acme_sh.stdout'
+  
+- name: Check if acme.sh is updated | acme.sh
+  shell: /root/.acme.sh/acme.sh --upgrade
+  args:
+    chdir: "{{ download_path }}"
+
+- name: Remove existing cronjob acme.sh | acme.sh
+  shell: crontab -l | grep -v '.acme.sh' | crontab -
+  args:
+    chdir: "{{ download_path }}"
+
+- name: Run CRON job every day at 01:30 | acme.sh
+  cron:
+    name: "acme.sh"
+    user: "root"
+    hour: "1"
+    minute: "30"
+    job: '"/root/.acme.sh/acme.sh" --cron --home "/root/.acme.sh" > /dev/null'
+    state: present

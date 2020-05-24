@@ -1,9 +1,10 @@
 ---
-email_cluster: server@domeniulmeunou.ro
+email_cluster: alex.canavoiu@marketingromania.ro
 ansible_local_ip: 192.168.1.100
 admin_local_ip: 192.168.1.134
 download_path: /root/download_cluster
-primary_domain: domeniulmeunou.ro
+primary_domain: alex.marketingromania.ro
+primary_domain_with_dns: 1
 primary_domain_user: domeniulmeunou
 primary_domain_password: domeniulmeunou
 primary_domain_uid: "3030"
@@ -16,7 +17,7 @@ nfs_ip_mount: 192.168.1.101
 # 1 = (Load Balancer) Haproxy -> (Nodes) Apache + Lighttpd
 # 2 = (Load Balancer) Haproxy -> (Nodes) Nginx
 # 3 = (Load Balancer) Nginx -> (Nodes) Nginx
-cluster_setup_mode: 3
+cluster_setup_mode: 2
 
 #nginx
 nginx_lb_version: 1.18.0
@@ -50,6 +51,7 @@ galera_cluster_mariadbbackup_password: kDyS7Ve93nTHmCg2xyxx
 phpmyadmin_version: 5.0.2
 phpmyadmin_auth_user: "alexandru"
 phpmyadmin_auth_password: "ourphpmyadminpassword"
+
 
 #rsyslog
 ### first server from lb group to receive logs

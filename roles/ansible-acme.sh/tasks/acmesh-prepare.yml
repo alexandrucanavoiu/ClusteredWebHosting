@@ -1,0 +1,10 @@
+---
+- name: Install requirements acme.sh | acme.sh
+  yum:
+    name: 
+      - socat
+      - bind-utils
+    state: present
+  register: socat_install_requirements
+  until: socat_install_requirements is succeeded
+  retries: 3

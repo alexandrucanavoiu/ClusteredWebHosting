@@ -1,0 +1,5 @@
+---
+- import_tasks: certbot-install.yml
+
+- import_tasks: certbot-generate-ssl.yml
+  when: primary_domain_with_dns == 1

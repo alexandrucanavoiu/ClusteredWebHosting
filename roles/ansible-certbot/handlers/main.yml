@@ -1,0 +1,10 @@
+---
+- name: restart haproxy
+  systemd:
+    name: haproxy
+    state: restarted
+
+- name: restart iptables
+  systemd:
+    name: iptables
+    state: restarted

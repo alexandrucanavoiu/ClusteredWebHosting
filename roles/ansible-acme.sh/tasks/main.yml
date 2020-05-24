@@ -1,0 +1,6 @@
+---
+- import_tasks: acmesh-prepare.yml
+
+- import_tasks: acmesh-install.yml
+
+- import_tasks: acmesh-generate-ssl.yml
