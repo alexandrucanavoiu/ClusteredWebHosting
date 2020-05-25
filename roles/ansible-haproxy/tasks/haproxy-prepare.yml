@@ -1,5 +1,5 @@
 ---
-- name: Download & Unarchive haproxy-{{ haproxy_version_major_mirror_patch }}.tar.gz
+- name: Download & Unarchive haproxy-{{ haproxy_version_major_mirror_patch }}.tar.gz  | haproxy
   unarchive:
     src: "http://www.haproxy.org/download/{{ haproxy_version_major_mirror }}/src/haproxy-{{ haproxy_version_major_mirror_patch }}.tar.gz"
     dest: "{{ download_path }}"
@@ -15,24 +15,24 @@
     state: present
 
     # haproxy prepare
-- name: Check if {{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }} exist.
+- name: Check if {{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }} exist.  | haproxy
   stat:
      path: "{{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }}"
   register: haproxy_folder
 
-- name: Delete folder haproxy-{{ haproxy_version_major_mirror_patch }} if exist in {{ download_path }}
+- name: Delete folder haproxy-{{ haproxy_version_major_mirror_patch }} if exist in {{ download_path }} | haproxy
   file:
      path: "{{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }}"
      state: absent
   when: haproxy_folder.stat.exists == true
 
-- name: Download {{ haproxy_version }}
+- name: Download {{ haproxy_version }} | haproxy
   get_url:
      url: "http://www.haproxy.org/download/{{ haproxy_version_major_mirror }}/src/haproxy-{{ haproxy_version_major_mirror_patch }}.tar.gz"
      dest: "{{ download_path }}"
   register: haproxy_source
 
-- name: Unpacking HAProxy
+- name: Unpacking HAProxy | haproxy
   unarchive:
      copy: no
      dest: "{{ download_path }}"
@@ -41,26 +41,26 @@
 
     # LUA prepare
 
-- name: Check if {{ download_path }}/{{ lua_version }} exist.
+- name: Check if {{ download_path }}/{{ lua_version }} exist. | haproxy
   stat:
     path: "{{ download_path }}/{{ lua_version }}"
   register: lua_folder
   when: compile_haproxy_with_lua == 1
 
-- name: Delete folder {{ lua_version }} if exist in {{ download_path }}
+- name: Delete folder {{ lua_version }} if exist in {{ download_path }} | haproxy
   file:
     path: "{{ download_path }}/{{ lua_version }}"
     state: absent
   when: compile_haproxy_with_lua == 1 and lua_folder.stat.exists == true
 
-- name: Download {{ lua_version }}
+- name: Download {{ lua_version }} | haproxy
   get_url:
     url: "http://www.lua.org/ftp/{{ lua_version }}.tar.gz"
     dest: "{{ download_path }}"
   register: lua_source
   when: compile_haproxy_with_lua == 1
 
-- name: Unpacking LUA
+- name: Unpacking LUA | haproxy
   unarchive:
     copy: no
     dest: "{{ download_path }}"
@@ -69,7 +69,7 @@
   when: compile_haproxy_with_lua == 1
 
 # LUA Compile
-- name: Run 'make linux test && make install' - {{ lua_version }}
+- name: Run 'make linux test && make install' - {{ lua_version }} | haproxy
   shell: make linux test && make install
   args:
     chdir: "{{ download_path }}/{{ lua_version }}"
@@ -77,7 +77,7 @@
   register: lua_configure
 
 # HAProxy Compile with LUA
-- name: Run make & make install | haproxy-{{ haproxy_version_major_mirror_patch }}
+- name: Run make & make install | haproxy-{{ haproxy_version_major_mirror_patch }} | haproxy
   shell: make -j $(nproc) TARGET=linux-glibc USE_OPENSSL=1 USE_ZLIB=1 USE_LUA=1 USE_PCRE=1 USE_SYSTEMD=1 && make install
   args:
     chdir: "{{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }}"
@@ -85,7 +85,7 @@
   register: haproxy_configure
 
 # HAProxy Compile without LUA
-- name: Run make & make install | haproxy-{{ haproxy_version_major_mirror_patch }}
+- name: Run make & make install | haproxy-{{ haproxy_version_major_mirror_patch }} | haproxy
   shell: make -j $(nproc) TARGET=linux-glibc USE_OPENSSL=1 USE_ZLIB=1 USE_PCRE=1 USE_SYSTEMD=1 && make install
   args:
     chdir: "{{ download_path }}/haproxy-{{ haproxy_version_major_mirror_patch }}"
@@ -93,7 +93,7 @@
   register: haproxy_configure
 
 # Create haproxy folders
-- name: Create haproxy folders in /etc
+- name: Create haproxy folders in /etc | haproxy
   file:
     path: "{{ item }}"
     state: directory
@@ -106,32 +106,32 @@
     - /etc/haproxy/errors
     - "{{ download_path }}/ssl"
 
-- name: copy default haproxy files
+- name: copy default haproxy files | haproxy
   copy:
     src: files/errors
     dest: /etc/haproxy
 
-- name: Copy Haproxy cloudflare ip list
+- name: Copy Haproxy cloudflare ip list | haproxy
   copy:
     src: "files/systemd/cloudflare.ip.list"
     dest: /etc/haproxy/cloudflare.ip.list
 
-- name: Copy systemd haproxy file
+- name: Copy systemd haproxy file | haproxy
   copy:
     src: "files/systemd/systemd.haproxy"
     dest: /etc/systemd/system/haproxy
 
-- name: Copy systemd haproxy file
+- name: Copy systemd haproxy file | haproxy
   copy:
     src: "files/systemd/systemd.haproxy"
     dest: /lib/systemd/system/haproxy.service
 
-- name: Copy sysconfig haproxy file
+- name: Copy sysconfig haproxy file | haproxy
   copy:
     src: "files/systemd/sysconfig.haproxy"
     dest: /etc/sysconfig/haproxy
 
-- name: Generate password for Auth
+- name: Generate password for Auth | haproxy
   shell: python -c 'import crypt; print crypt.crypt("{{ phpmyadmin_auth_password }}", "$6$94848fj487844")'
   args:
     chdir: "{{ download_path }}"

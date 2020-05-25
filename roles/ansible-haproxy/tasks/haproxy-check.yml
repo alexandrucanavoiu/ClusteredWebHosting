@@ -1,5 +1,5 @@
 ---
-- name: Check 443 port numbers are accessible from current host
+- name: Check 443 port numbers are accessible from current host | haproxy
   wait_for:
     host: "{{ item }}"
     port: 443
@@ -9,7 +9,7 @@
   ignore_errors: yes
   with_items: "{{ groups['lb'] }}"
 
-- name: Check 80 port numbers are accessible from current host
+- name: Check 80 port numbers are accessible from current host | haproxy
   wait_for:
     host: "{{ item }}"
     port: 80

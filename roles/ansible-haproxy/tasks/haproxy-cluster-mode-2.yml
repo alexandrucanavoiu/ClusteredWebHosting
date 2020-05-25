@@ -1,10 +1,10 @@
 ---
-- name: Copy Haproxy config file
+- name: Copy Haproxy config file | haproxy
   template:
     src: haproxy-cluster-mode-2.cfg.j2
     dest: /etc/haproxy/haproxy.cfg
 
-- name: Enable haproxy service
+- name: Enable haproxy service | haproxy
   systemd:
     name: haproxy
     state: started

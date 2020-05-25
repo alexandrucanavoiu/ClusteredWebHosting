@@ -5,7 +5,7 @@
 case "$1" in
 'start')
         touch /var/lock/subsys/storage_mount
-ln -sn {{ storage_path }}/{{ primary_domain_user }}/ /home/{{ primary_domain_user }}/
+ln -sn {{ storage_path }}/{{ primary_domain_user }}/ /home/{{ primary_domain_user }}
 
         ;;
 'stop')
