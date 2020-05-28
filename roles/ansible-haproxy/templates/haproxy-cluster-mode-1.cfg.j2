@@ -110,3 +110,6 @@
                 server s{{ outer_loop.index }} {{ ip_address_node }}:8081 check port 8081 maxconn 50 cookie s{{ outer_loop.index }} maxqueue 300
 {% endfor %}
 {% endfor %}
+
+        backend letsencrypt
+                server letsencrypt 127.0.0.1:9785

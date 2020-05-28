@@ -1,8 +1,0 @@
----
-- name: Install Certbot | certbot
-  yum:
-    name:  certbot
-    state: present
-  register: certbot_install_status
-  until: certbot_install_status is succeeded
-  retries: 3

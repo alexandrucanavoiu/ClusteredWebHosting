@@ -1,12 +1,12 @@
 ---
-email_cluster: alex.canavoiu@marketingromania.ro
+email_cluster: myemail@mydomain.com
 ansible_local_ip: 192.168.1.100
 admin_local_ip: 192.168.1.134
 download_path: /root/download_cluster
-primary_domain: alex2.marketingromania.ro
+primary_domain: mydomain.com
 primary_domain_with_dns: 1
-primary_domain_user: domeniulmeunou
-primary_domain_password: domeniulmeunou
+primary_domain_user: mydomain
+primary_domain_password: mydomain
 primary_domain_uid: "3030"
 primary_domain_gid: "3030"
 storage_path: /storage/websites

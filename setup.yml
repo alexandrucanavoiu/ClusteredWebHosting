@@ -20,7 +20,6 @@
   roles:
           - { role: ansible-haproxy, when: cluster_setup_mode == 1 or cluster_setup_mode == 2, tags: haproxy }
           - { role: ansible-nginx-lb, when: cluster_setup_mode == 3, tags: nginx-lb }
-          # - { role: ansible-certbot, tags: certbot }
           - { role: ansible-acme.sh, tags: acme.sh }
 
 - hosts: nfs
