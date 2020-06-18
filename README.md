@@ -191,6 +191,17 @@ $ ansible-playbook -i inventory/single playbooks/remove-domain-single.yml -e "pr
 
 ```
 
+#### Add Mysql Username / Database
+
+```
+$ ansible-playbook -i inventory/cluster playbooks/mariadb-galera-add.yml -e "username=testinguser" -e "password=testinguser123" -e "database=testinguser"
+```
+
+#### Remove Mysql Username / Database
+
+```
+$ ansible-playbook -i inventory/cluster playbooks/mariadb-galera-remove.yml -e "username=testinguser" -e "database=testinguser"
+```
+
 ## TO DO:
-- improve security
-- playbook to add/remove users/databases
+- improve security / vaults

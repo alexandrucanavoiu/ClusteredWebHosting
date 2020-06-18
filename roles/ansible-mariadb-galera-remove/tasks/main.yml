@@ -5,20 +5,17 @@
   when: "{{ item }} is not defined"
   with_items:
     - username
-    - password
     - database
 
 - name: Create a new database with name {{ database }}
   mysql_db:
     name: "{{ database }}"
-    state: present
+    state: absent
     login_password: "{{ galera_cluster_root_password }}"
 
 - name: Create a new username {{ username }} and grant access to {{ database }}
   mysql_user:
     name: "{{ username }}"
-    password: "{{ password }}"
-    priv: "{{ database }}.*:ALL"
-    state: present
+    state: absent
     login_password: "{{ galera_cluster_root_password }}"
     host: "%"

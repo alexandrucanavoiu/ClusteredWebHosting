@@ -1,0 +1,9 @@
+- hosts: galera_cluster_nodes[0]
+  user: root
+  become: false
+  gather_facts: no
+  vars_files:
+    - vars/global-vars.yml
+    - vars/setup-cluster-vars.yml
+  roles:
+      - { role: ansible-mariadb-galera-add, tags: ansible-mariadb-galera-add }
