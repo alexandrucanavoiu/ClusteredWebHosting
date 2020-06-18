@@ -1,0 +1,6 @@
+---
+- name: restart mysql8
+  service:
+    name: mysqld
+    state: restarted
+  become: true

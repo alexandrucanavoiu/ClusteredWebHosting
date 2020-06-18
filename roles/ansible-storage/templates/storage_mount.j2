@@ -5,10 +5,15 @@
 case "$1" in
 'start')
         touch /var/lock/subsys/storage_mount
+
+#storage_website_mount
 ln -sn {{ storage_path }}/{{ primary_domain_user }}/ /home/{{ primary_domain_user }}
 
         ;;
 'stop')
+
+
+#storage_umount
 unlink  /home/{{ primary_domain_user }}
         rm -f /var/lock/subsys/storage_mount
 

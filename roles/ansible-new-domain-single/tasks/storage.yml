@@ -1,0 +1,36 @@
+---
+
+- set_fact:
+    storage_link_line: "ln -sn {{ storage_path }}/{{ primary_domain_user }}/ /home/{{ primary_domain_user }}"
+    storage_unlink_line: "unlink  /home/{{ primary_domain_user }}"
+
+- name: Create temporary exports file.
+  template:
+    src: exports.j2
+    dest: "{{ download_path }}/exports"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Append temporary exports file to /etc/exports & remove temporary exports file
+  shell: "cat {{ download_path }}/exports >> /etc/exports && rm -f cat {{ download_path }}/exports"
+
+- name: reload nfs
+  shell: "exportfs -ra"
+
+- name: restart nfs
+  systemd:
+    name: nfs-server
+    state: restarted
+
+- name: modify storage mount bash script - Step 1
+  replace:
+    path: /etc/init.d/storage_mount
+    regexp: '^(.*storage_link.*)(?!storage_link_line)'
+    replace: '\1\n{{ storage_link_line }}'
+
+- name: modify storage mount bash script - Step 2
+  replace:
+    path: /etc/init.d/storage_mount
+    regexp: '^(.*storage_unlink.*)(?!storage_unlink_line)'
+    replace: '\1\n{{ storage_unlink_line }}'

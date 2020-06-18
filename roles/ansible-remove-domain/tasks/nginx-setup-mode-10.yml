@@ -1,0 +1,22 @@
+---
+
+- name: Remove /etc/nginx/conf.d/{{ primary_domain }}.conf
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "/etc/nginx/conf.d/{{ primary_domain }}.conf"
+    # - "/etc/nginx/ssl/{{ primary_domain }}.crt"
+    # - "/etc/nginx/ssl/{{ primary_domain }}.key"
+    # - "/etc/nginx/ssl/{{ primary_domain }}.csr"
+    - "/etc/haproxy/ssl/{{ primary_domain }}.keycacrt.crt"
+
+- name: Reload Nginx
+  systemd:
+    name: nginx
+    state: reloaded
+
+- name: Reload Haproxy
+  systemd:
+    name: haproxy
+    state: reloaded

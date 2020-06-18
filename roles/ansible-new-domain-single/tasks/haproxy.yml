@@ -1,0 +1,31 @@
+---
+- set_fact:
+    acl_name: "{{ primary_domain | replace('.', '_') }}"
+
+- set_fact:
+    line_name_domain_acl: "acl d_{{ acl_name }} hdr(host) {{ primary_domain }} www.{{ primary_domain }}"
+
+    line_name_domain_www_with_http_1: "http-request redirect prefix https://www.%[hdr(host)] code 301 if !url_haswww d_{{ acl_name }}"
+    line_name_domain_www_with_http_2: "http-request redirect scheme https code 301 if url_haswww d_{{ acl_name }}"
+
+    line_name_domain_www_with_https_1: "http-request redirect prefix https://www.%[hdr(host)] code 301 if !url_haswww  d_{{ acl_name }}"
+
+- name: define acl for {{ primary_domain }} and www.{{ primary_domain }}
+  replace:
+    path: /etc/haproxy/haproxy.cfg
+    regexp: '^(.*new_domain_haproxy.*)(?!\t\line_name_domain_acl)'
+    replace: '\1\n\t\t{{ line_name_domain_acl }}'
+
+- name: define http-request www with https redirect from http
+  replace:
+    path: /etc/haproxy/haproxy.cfg
+    regexp: '^(.*new_domain_redirect_to_www_frontend_http_in.*)(?!\t\line_name_domain_www_with_http_1)'
+    replace: '\1\n\t\t{{ line_name_domain_www_with_http_1 }}\n\t\t{{ line_name_domain_www_with_http_2 }}'
+  when: primary_domain_force_to_www_with_https == 1
+
+- name: define http-request www with https redirect from https
+  replace:
+    path: /etc/haproxy/haproxy.cfg
+    regexp: '^(.*new_domain_redirect_to_www_frontend_https_in.*)(?!\t\line_name_domain_www_with_https_1)'
+    replace: '\1\n\t\t{{ line_name_domain_www_with_https_1 }}'
+  when: primary_domain_force_to_www_with_https == 1

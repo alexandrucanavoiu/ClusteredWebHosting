@@ -1,0 +1,113 @@
+        global
+                nbproc 1
+                daemon
+                maxconn 4096
+                stats socket /tmp/sock1 level admin
+                #user haproxy
+                #group haproxy
+                tune.ssl.default-dh-param 4096
+                ssl-default-bind-ciphers TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+
+
+        defaults
+                log global
+                log        127.0.0.1       local0
+                # use rsyslog rules to forword to a centralized server
+                log        127.0.0.1       local7 debug
+                mode http
+                maxconn 2000
+                option forwardfor
+                option http-server-close
+                option redispatch
+                option abortonclose
+                option prefer-last-server
+                option http-keep-alive
+                option httplog clf
+                # check webservers for health, taking them out of the queue as necessary
+                option httpchk
+                timeout connect 5000ms
+                timeout server 30m
+                timeout client 20s
+                timeout http-keep-alive 15000ms
+                stats enable
+                stats hide-version
+                stats uri /hap-stats
+                stats realm LbStatistics
+                stats auth {{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}:{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}
+                stats refresh 5s
+
+
+        userlist UsersAuth
+                group admin users {{ phpmyadmin_auth_user }}
+                user {{ phpmyadmin_auth_user }} password {{ passwd_auth_phpmyadmin }}
+
+
+        frontend http-in
+{% for host in groups['lb'] %}
+{% for ip_address_lb in  hostvars[host]['ansible_all_ipv4_addresses'] %}
+                bind {{ ip_address_lb }}:80
+{% endfor %}
+{% endfor %}
+                bind 127.0.0.1:80
+                default_backend nginx_backend
+                acl cf_cdn_src src -f /etc/haproxy/cloudflare.ip.list
+                acl url_haswww hdr_beg(host) -i www.
+
+                #new_domain_haproxy
+                acl d1 hdr(host) {{ primary_domain }} www.{{ primary_domain }}
+
+                # /phpmyadmin path
+                acl is_ip req.hdr(host) -m ip 0.0.0.0/0
+                acl phpmyadmin_path path_beg -i /phpmyadmin
+                acl AuthOkay_phpmyadmin http_auth(UsersAuth)
+
+                # certbot
+                acl letsencrypt-req path_beg /.well-known/acme-challenge/
+
+                http-request set-src hdr(CF-Connecting-IP) if cf_cdn_src
+                http-request auth realm AuthYourself if is_ip phpmyadmin_path !AuthOkay_phpmyadmin
+
+                #new_domain_redirect_to_www_frontend_http_in
+                http-request redirect prefix https://www.%[hdr(host)] code 301 if !url_haswww  d1
+                http-request redirect scheme https code 301 if url_haswww  d1
+
+                use_backend letsencrypt if letsencrypt-req
+
+        frontend https-self-in
+{% for host in groups['lb'] %}
+{% for ip_address_lb in  hostvars[host]['ansible_all_ipv4_addresses'] %}
+                bind {{ ip_address_lb }}:443 ssl crt /etc/haproxy/ssl alpn h2,http/1.1
+{% endfor %}
+{% endfor %}
+                bind 127.0.0.1:443 ssl crt /etc/haproxy/ssl alpn h2,http/1.1
+                default_backend nginx_backend
+                acl cf_cdn_src src -f /etc/haproxy/cloudflare.ip.list
+                acl url_haswww hdr_beg(host) -i www.
+
+                #new_domain_haproxy
+                acl d1 hdr(host) {{ primary_domain }} www.{{ primary_domain }}
+
+                # /phpmyadmin path
+                acl is_ip req.hdr(host) -m ip 0.0.0.0/0
+                acl phpmyadmin_path path_beg -i /phpmyadmin
+                acl AuthOkay_phpmyadmin http_auth(UsersAuth)
+
+                # certbot
+                acl letsencrypt-req path_beg /.well-known/acme-challenge/
+
+                http-request auth realm AuthYourself if is_ip phpmyadmin_path !AuthOkay_phpmyadmin
+                http-request set-src hdr(CF-Connecting-IP) if cf_cdn_src
+
+                #new_domain_redirect_to_www_frontend_https_in
+                http-request redirect prefix https://www.%[hdr(host)] code 301 if !url_haswww  d1
+                
+                use_backend letsencrypt if letsencrypt-req
+
+        backend nginx_backend
+                option httpchk HEAD /index.html
+                balance roundrobin
+                cookie HAPPIDS1 insert indirect nocache maxidle 60m maxlife 24h
+                server s1 127.0.0.1:8080 check port 8080 maxconn 50 cookie s1 maxqueue 300
+
+        backend letsencrypt
+                server letsencrypt 127.0.0.1:9785

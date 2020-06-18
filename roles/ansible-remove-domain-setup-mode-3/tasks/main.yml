@@ -1,0 +1,31 @@
+---
+  - name: alert if variable does not exist
+    fail:
+      msg: "{{ item }} is not defined"
+    when: "{{ item }} is not defined"
+    with_items:
+      - primary_domain_user
+      - primary_domain
+      - cluster_setup_mode
+
+  - name: Fail if cluster_setup_mode is not defined proper
+    fail:
+      msg: "Fail cluster_setup_mode is not 1, 2 or 3"
+    when: cluster_setup_mode | int not in cluster_setup_mode_accepted
+
+  # cluster_setup_mode 3
+
+  - import_tasks: check-domain-cluster-setup-mode-3.yml
+    when: cluster_setup_mode | int == 3 and ( inventory_hostname in groups['nodes'] )
+
+  - import_tasks: nginx-php-fpm.yml
+    when: cluster_setup_mode | int == 3 and ( inventory_hostname in groups['nodes'] )
+  
+  - import_tasks: storage-mount.yml
+    when: cluster_setup_mode | int == 3 and ( inventory_hostname in groups['nodes'] )
+
+  - import_tasks: storage.yml
+    when: cluster_setup_mode | int == 3 and ( inventory_hostname in groups['lb'] )
+
+  - import_tasks: user.yml
+    when: cluster_setup_mode | int == 3

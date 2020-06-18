@@ -1,0 +1,19 @@
+---
+- set_fact:
+    path_to_remove: "/home/{{ primary_domain_user }}/"
+
+- name: Unmount a mounted volume
+  mount:
+    path: "/home/{{ primary_domain_user }}"
+    state: unmounted
+
+- name: "Remove folder /home/{{ primary_domain_user }}"
+  file:
+    path: "/home/{{ primary_domain_user }}"
+    state: absent
+
+- name: remove path for {{ primary_domain_user }} from /etc/init.d/storage_mount
+  lineinfile:
+    path: /etc/init.d/storage_mount
+    state: absent
+    regexp: ".*{{ path_to_remove | regex_escape() }}.*"

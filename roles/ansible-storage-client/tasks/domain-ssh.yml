@@ -1,0 +1,16 @@
+---
+- name: Create .ssh folder
+  file:
+    path: "/home/{{ primary_domain_user }}/.ssh"
+    state: directory
+    owner: "{{ primary_domain_user }}"
+    group: "{{ primary_domain_user }}"
+    mode: "0755"
+
+- name: "SSH Key for {{ primary_domain_user }}"
+  copy:
+    src: "{{ playbook_dir }}/keys/authorized_keys"
+    dest: "/home/{{ primary_domain_user }}/.ssh/authorized_keys"
+    owner: "{{ primary_domain_user }}"
+    group: "{{ primary_domain_user }}"
+    mode: '0600'

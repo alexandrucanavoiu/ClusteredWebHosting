@@ -1,0 +1,20 @@
+---
+- name: Check 443 port numbers are accessible from current host - Cluster Server | haproxy
+  wait_for:
+    host: "{{ item }}"
+    port: 443
+    state: started         # Port should be open
+    delay: 0               # No wait before first check (sec)
+    timeout: 3             # Stop checking after timeout (sec)
+  ignore_errors: yes
+  with_items: "{{ groups['lb'] }}"
+
+- name: Check 80 port numbers are accessible from current host - Cluster Server | haproxy
+  wait_for:
+    host: "{{ item }}"
+    port: 80
+    state: started         # Port should be open
+    delay: 0               # No wait before first check (sec)
+    timeout: 3             # Stop checking after timeout (sec)
+  ignore_errors: yes
+  with_items: "{{ groups['lb'] }}"

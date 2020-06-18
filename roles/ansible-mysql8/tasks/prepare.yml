@@ -1,0 +1,20 @@
+---
+- name: Remove all Mysql packages | Mysql8
+  # shell: yum remove mysql* -y
+  yum:
+    name: mysql*
+    state: absent
+
+- name: Remove Mysql old data if exist
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /var/lib/mysql
+    - /var/log/mysqld.log
+  ignore_errors: yes
+
+- name: Install repo Mysql8 | mysql8
+  yum:
+     name: https://repo.mysql.com/mysql80-community-release-el7-3.noarch.rpm
+     state: present

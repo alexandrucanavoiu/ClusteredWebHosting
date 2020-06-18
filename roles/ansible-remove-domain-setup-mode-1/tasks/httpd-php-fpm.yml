@@ -1,0 +1,48 @@
+---
+    # httpd/php-fpm
+  - name: Remove /etc/httpd/conf.d/{{ primary_domain }}.conf
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - "/etc/httpd/conf.d/{{ primary_domain }}.conf"
+    
+    # restart services
+  - name: Reload httpd
+    systemd:
+      name: httpd
+      state: reloaded
+
+  - name: Check if /etc/opt/remi/php74/php-fpm.d/{{ primary_domain }}.conf exist
+    stat:
+      path: "/etc/opt/remi/php74/php-fpm.d/{{ primary_domain }}.conf"
+    register: php_fpm_74
+
+  - name: Check if /etc/opt/remi/php73/php-fpm.d/{{ primary_domain }}.conf exist
+    stat:
+      path: "/etc/opt/remi/php73/php-fpm.d/{{ primary_domain }}.conf"
+    register: php_fpm_73
+
+  - name: Remove /etc/opt/remi/php73/php-fpm.d/{{ primary_domain }}.conf
+    file:
+      path: "/etc/opt/remi/php73/php-fpm.d/{{ primary_domain }}.conf"
+      state: absent
+    when: php_fpm_73.stat.exists
+
+  - name: Remove /etc/opt/remi/php74/php-fpm.d/{{ primary_domain }}.conf
+    file:
+      path: "/etc/opt/remi/php74/php-fpm.d/{{ primary_domain }}.conf"
+      state: absent
+    when: php_fpm_74.stat.exists
+
+  - name: Reload php73-php-fpm
+    systemd:
+      name: php73-php-fpm
+      state: reloaded
+    when: php_fpm_73.stat.exists
+
+  - name: Reload php73-php-fpm
+    systemd:
+      name: php74-php-fpm
+      state: reloaded
+    when: php_fpm_74.stat.exists

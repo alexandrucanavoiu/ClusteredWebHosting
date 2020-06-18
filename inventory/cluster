@@ -1,0 +1,15 @@
+[lb]
+lb.example.org
+
+[nodes]
+s1.example.org
+s2.example.org
+s3.example.org
+
+[nfs]
+lb.example.org
+
+[galera_cluster_nodes]
+db1.example.org
+db2.example.org
+db3.example.org

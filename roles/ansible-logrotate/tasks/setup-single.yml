@@ -1,0 +1,10 @@
+- name: Copy logrotate.d files - Single Server  | logrotate
+  template:
+    src: "{{ item }}.j2"
+    dest: "/{{ item }}"
+  with_items:
+    - 'etc/logrotate.d/cron'
+    - 'etc/logrotate.d/dmesg'
+    - 'etc/logrotate.d/secure'
+    - 'etc/logrotate.d/mysqld'
+    - 'etc/logrotate.d/mysqld'

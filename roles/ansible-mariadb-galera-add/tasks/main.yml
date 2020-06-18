@@ -1,0 +1,11 @@
+---
+- name: "Create user {{ user }}"
+  mysql_user:
+    name: "{{ user }}"
+    password: "{{ password }}"
+    host: localhost
+    state: present
+    update_password: on_create
+    priv: "{{ dbname }}.*:ALL"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  

@@ -30,5 +30,7 @@
   file:
     dest: "{{ item }}"
     mode: '0600'
-  with_fileglob:
-    - '/etc/nginx/ssl/*'
+  with_items:
+    - "/etc/nginx/ssl/{{ primary_domain }}.crt"
+    - "/etc/nginx/ssl/{{ primary_domain }}.csr"
+    - "/etc/nginx/ssl/{{ primary_domain }}.key"

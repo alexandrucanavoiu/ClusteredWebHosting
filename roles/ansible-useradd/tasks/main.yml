@@ -1,16 +1,4 @@
 ---
-  - name: Add group {{ primary_domain_user }} with GUID {{ primary_domain_gid }}
-    group:
-      name: "{{ primary_domain_user }}"
-      gid: "{{ primary_domain_gid }}"
-      state: present
+- import_tasks: precheck.yml
 
-  - name: Add user {{ primary_domain_user }} with GUID {{ primary_domain_uid }}
-    user:
-      name: "{{ primary_domain_user }}"
-      uid: "{{ primary_domain_uid }}"
-      shell: "/bin/false"
-      home: "/home/{{ primary_domain_user }}"
-      create_home: no
-      group: "{{ primary_domain_gid }}"
-      state: present
+- import_tasks: useradd.yml

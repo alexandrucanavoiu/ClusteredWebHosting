@@ -1,0 +1,21 @@
+---
+- name: Delete folder phpmyadmin if exist for nginx | phpmyadmin
+  file:
+    path: "/var/www/nginx/phpmyadmin"
+    state: absent
+
+- name: Download & Unarchive Phpmyadmin | phpmyadmin
+  unarchive:
+    src: "https://files.phpmyadmin.net/phpMyAdmin/{{ phpmyadmin_version }}/phpMyAdmin-{{ phpmyadmin_version }}-english.tar.gz"
+    dest: "/var/www/nginx/"
+    remote_src: yes
+    group: nginx
+    owner: nginx
+    extra_opts:
+      - --transform
+      - s/^phpMyAdmin-{{ phpmyadmin_version }}-english/phpmyadmin/
+
+- name: Delete folder phpmyadmin if exist | phpmyadmin
+  file:
+    path: "/var/www/nginx/phpMyAdmin-{{ phpmyadmin_version }}-english"
+    state: absent

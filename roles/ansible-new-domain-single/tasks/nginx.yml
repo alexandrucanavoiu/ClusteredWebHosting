@@ -1,0 +1,8 @@
+---
+- name: Copy nginx config files - cluster_setup_mode 10 - Step 2 | nginx
+  template:
+    src: 'nginx_primary_domain.conf.j2'
+    dest: "/etc/nginx/conf.d/{{ primary_domain }}.conf"
+    owner: root
+    group: root
+    mode: '0600'

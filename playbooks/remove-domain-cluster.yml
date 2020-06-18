@@ -1,0 +1,11 @@
+---
+# ansible-playbook -i inventory/cluster playbooks/remove-domain-cluster.yml -e "primary_domain_user=alex5123" -e "primary_domain=alex2.domain.eu" -e "cluster_setup_mode=1" --tags remove-domain-setup-mode-1
+- hosts: all
+  user: root
+  become: true
+  vars_files:
+    - vars/remove-domain-vars.yml
+  roles:
+          - { role: ansible-remove-domain-setup-mode-3, when: cluster_setup_mode | int == 3, tags: remove-domain-setup-mode-3 }
+          - { role: ansible-remove-domain-setup-mode-2, when: cluster_setup_mode | int == 2, tags: remove-domain-setup-mode-2 }
+          - { role: ansible-remove-domain-setup-mode-1, when: cluster_setup_mode | int == 1, tags: remove-domain-setup-mode-1 }

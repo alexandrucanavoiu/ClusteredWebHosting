@@ -1,0 +1,10 @@
+  # remove user / group
+  - name: Remove the user {{ primary_domain_user }}
+    user:
+      name: "{{ primary_domain_user }}"
+      state: absent
+
+  - name: Remove the group {{ primary_domain_user }}
+    group:
+      name: "{{ primary_domain_user }}"
+      state: absent

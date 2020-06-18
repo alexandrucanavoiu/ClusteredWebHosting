@@ -1,0 +1,20 @@
+email_cluster: myemail@mydomain.com
+ansible_local_ip: 192.168.1.100
+admin_local_ip: 192.168.1.134
+download_path: /root/download_cluster
+primary_domain: mydomain.example.org
+primary_domain_with_dns: 0
+primary_domain_force_to_www_with_https: 1
+primary_domain_user: mydomain
+# ssl key for primary_domain: 1 = yes / 0 = no | Add the key in ../playbooks/authorized_keys
+primary_domain_ssh_key: 1
+
+primary_domain_uid: "3030"
+primary_domain_gid: "3030"
+primary_domain_id: "3030"
+storage_path: /storage/websites
+
+# Phpmyadmin
+phpmyadmin_version: 5.0.2
+phpmyadmin_auth_user: "alexandru"
+phpmyadmin_auth_password: "ourphpmyadminpassword"

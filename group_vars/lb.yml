@@ -1,4 +1,0 @@
----
-ansible_local_ip: 192.168.1.100
-admin_local_ip: 192.168.1.134
-download_path: /root/download_cluster/

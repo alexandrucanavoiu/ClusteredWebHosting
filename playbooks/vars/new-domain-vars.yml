@@ -1,0 +1,19 @@
+primary_domain: test.example.org
+primary_domain_with_dns: 0
+primary_domain_user: test
+primary_domain_php_version: php74
+primary_domain_force_to_www_with_https: 0
+# primary_domain_with_ssl = 1 - it will create self-ssl
+# primary_domain_with_ssl = 1 + primary_domain_with_dns = 1 -- install with acme
+primary_domain_with_ssl: 1
+# ssl key for primary_domain: 1 = yes / 0 = no | Add the key in ../playbooks/authorized_keys
+primary_domain_ssh_key: 1
+#GID/UID
+primary_domain_id: "3556"
+
+# don't modify these variables
+download_path: /root/download_cluster
+storage_path: /storage/websites
+
+# do not change this variable
+new_domain: 1

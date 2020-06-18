@@ -1,2 +1,6 @@
 ---
-- import_tasks: phpmyadmin-prepare.yml
+- import_tasks: install-for-httpd.yml
+  when: cluster_setup_mode == 1
+
+- import_tasks: install-for-nginx.yml
+  when: cluster_setup_mode == 2 or cluster_setup_mode == 3 or cluster_setup_mode == 10

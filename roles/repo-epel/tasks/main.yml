@@ -1,24 +1,7 @@
 ---
 # tasks file for repo-epel
-- name: Check if EPEL repo is already configured first.
-  stat:
-    path: "{{ epel_repo_file_path }}"
-  register: epel_repo_file_result
+- import_tasks: centos7.yml
+  when: os_name == "centos"
 
-- name: Install EPEL Repo
-  yum:
-   name: "{{ epel_repo_url }}"
-   state: present
-  register: result
-  until: result is succeeded
-  retries: 5
-  delay: 5
-  when: not epel_repo_file_result.stat.exists
-
-- name: Import EPEL GPG Key
-  rpm_key:
-   key: "{{ epel_repo_gpg_key_url }}"
-   state: present
-  when: not epel_repo_file_result.stat.exists
-  ignore_errors: "{{ ansible_check_mode }}"
-
+- import_tasks: amazon2.yml
+  when: os_name == "amazon"

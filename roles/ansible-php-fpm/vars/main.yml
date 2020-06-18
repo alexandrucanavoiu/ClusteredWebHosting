@@ -44,7 +44,7 @@ php73_version:
   - php73-php-session
   - php73-php-simplexml
   - php73-php-intl
-  - php73-php-imagick
+  # - php73-php-imagick
   - php73-php-sysvsem
   - php73-php-exif
   - php73-php-shmop
@@ -109,7 +109,7 @@ php74_version:
   - php74-php-session
   - php74-php-simplexml
   - php74-php-intl
-  - php74-php-imagick
+  # - php74-php-imagick
   - php74-php-sysvsem
   - php74-php-exif
   - php74-php-shmop
@@ -133,4 +133,4 @@ php74_version:
   - php74-php-openssl
   - php74-php-zip
 
-group_owner_lib_php: '{{ "nginx" if cluster_setup_mode == 2 or cluster_setup_mode == 3 else "apache" }}'
+group_owner_lib_php: '{{ "nginx" if cluster_setup_mode == 2 or cluster_setup_mode == 3 or cluster_setup_mode == 10 else "apache" }}'

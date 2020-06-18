@@ -1,0 +1,28 @@
+---
+- name: Add group {{ primary_domain_user }} with GUID {{ primary_domain_id }}
+  group:
+    name: "{{ primary_domain_user }}"
+    gid: "{{ primary_domain_id }}"
+    state: present
+
+- name: Add user {{ primary_domain_user }} with GUID {{ primary_domain_id }}
+  user:
+    name: "{{ primary_domain_user }}"
+    uid: "{{ primary_domain_id }}"
+    shell: "/bin/false"
+    home: "/home/{{ primary_domain_user }}"
+    create_home: no
+    group: "{{ primary_domain_id }}"
+    state: present
+  when: primary_domain_ssh_key == 0
+
+- name: Add user {{ primary_domain_user }} with GUID {{ primary_domain_id }}
+  user:
+    name: "{{ primary_domain_user }}"
+    uid: "{{ primary_domain_id }}"
+    shell: "/bin/false"
+    home: "/home/{{ primary_domain_user }}"
+    create_home: no
+    group: "{{ primary_domain_id }}"
+    state: present
+  when: primary_domain_ssh_key == 1

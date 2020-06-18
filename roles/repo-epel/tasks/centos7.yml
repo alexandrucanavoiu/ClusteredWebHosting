@@ -1,0 +1,23 @@
+---
+- name: Check if EPEL repo is already configured first - CentOS 7 | epel
+  stat:
+    path: "{{ epel_repo_file_path }}"
+  register: epel_repo_file_result
+
+- name: Install EPEL Repo - CentOS 7 | epel
+  yum:
+   name: "{{ epel_repo_url }}"
+   state: present
+  register: result
+  until: result is succeeded
+  retries: 5
+  delay: 5
+  when: not epel_repo_file_result.stat.exists
+
+- name: Import EPEL GPG Key - CentOS 7 | epel
+  rpm_key:
+   key: "{{ epel_repo_gpg_key_url }}"
+   state: present
+  when: not epel_repo_file_result.stat.exists
+  ignore_errors: "{{ ansible_check_mode }}"
+

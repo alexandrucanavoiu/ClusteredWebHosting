@@ -11,4 +11,12 @@
   when: >
     cluster_setup_mode == 2
 
-- import_tasks: haproxy-check.yml
+- import_tasks: haproxy-cluster-mode-10.yml
+  when: >
+    cluster_setup_mode == 10
+
+- import_tasks: haproxy-check-cluster.yml
+  when: cluster_setup_mode != 10
+
+- import_tasks: haproxy-check-single.yml
+  when: cluster_setup_mode == 10

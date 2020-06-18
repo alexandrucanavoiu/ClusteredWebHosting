@@ -54,9 +54,12 @@
                 bind {{ ip_address_lb }}:80
 {% endfor %}
 {% endfor %}
+                bind 127.0.0.1:80
                 default_backend nginx_backend
                 acl cf_cdn_src src -f /etc/haproxy/cloudflare.ip.list
                 acl url_haswww hdr_beg(host) -i www.
+
+                #new_domain_haproxy
                 acl d1 hdr(host) {{ primary_domain }} www.{{ primary_domain }}
 
                 # /phpmyadmin path
@@ -69,8 +72,11 @@
 
                 http-request set-src hdr(CF-Connecting-IP) if cf_cdn_src
                 http-request auth realm AuthYourself if is_ip phpmyadmin_path !AuthOkay_phpmyadmin
+
+                #new_domain_redirect_to_www_frontend_http_in
                 http-request redirect prefix https://www.%[hdr(host)] code 301 if !url_haswww  d1
                 http-request redirect scheme https code 301 if url_haswww  d1
+
                 use_backend letsencrypt if letsencrypt-req
 
         frontend https-self-in
@@ -79,9 +85,12 @@
                 bind {{ ip_address_lb }}:443 ssl crt /etc/haproxy/ssl alpn h2,http/1.1
 {% endfor %}
 {% endfor %}
+                bind 127.0.0.1:443 ssl crt /etc/haproxy/ssl alpn h2,http/1.1
                 default_backend nginx_backend
                 acl cf_cdn_src src -f /etc/haproxy/cloudflare.ip.list
                 acl url_haswww hdr_beg(host) -i www.
+
+                #new_domain_haproxy
                 acl d1 hdr(host) {{ primary_domain }} www.{{ primary_domain }}
 
                 # /phpmyadmin path
@@ -94,7 +103,10 @@
 
                 http-request auth realm AuthYourself if is_ip phpmyadmin_path !AuthOkay_phpmyadmin
                 http-request set-src hdr(CF-Connecting-IP) if cf_cdn_src
+
+                #new_domain_redirect_to_www_frontend_https_in
                 http-request redirect prefix https://www.%[hdr(host)] code 301 if !url_haswww  d1
+                
                 use_backend letsencrypt if letsencrypt-req
 
         backend nginx_backend

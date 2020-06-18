@@ -1,0 +1,46 @@
+---
+# Create ssl folder
+- name: Create ssl folder in /root
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  with_items:
+    - "{{ download_path }}/ssl"
+
+- name: create Self-Signed SSL key for domain {{ primary_domain }} Step 1/4 | Self SSL
+  openssl_privatekey:
+    path: "{{ download_path }}/ssl/{{ primary_domain }}.key"
+  register: key
+
+- name: create Self-Signed SSL key for domain {{ primary_domain }} Step 1/4 | Self SSL
+  openssl_privatekey:
+    path: "{{ download_path }}/ssl/{{ primary_domain }}.key"
+  register: key
+
+- name: create Self-Signed SSL csr for domain {{ primary_domain }} Step 2/4 | Self SSL
+  openssl_csr:
+    path: "{{ download_path }}/ssl/{{ primary_domain }}.csr"
+    privatekey_path: "{{ key.filename }}"
+    common_name: "{{ primary_domain }}"
+  register: csr
+
+- name: create Self-Signed SSL for domain {{ primary_domain }} Step 3/4 | Self SSL
+  openssl_certificate:
+    path: "{{ download_path }}/ssl/{{ primary_domain }}.crt"
+    privatekey_path: "{{ csr.privatekey }}"
+    csr_path: "{{ csr.filename }}"
+    provider: selfsigned
+
+- name: create Self-Signed SSL for domain {{ primary_domain }} Step 3/4 | Self SSL
+  openssl_certificate:
+    path: "{{ download_path }}/ssl/{{ primary_domain }}.crt"
+    privatekey_path: "{{ csr.privatekey }}"
+    csr_path: "{{ csr.filename }}"
+    provider: selfsigned
+
+- name: combine cert and key {{ primary_domain }} in one file Step 4/4 | Self SSL - haproxy
+  shell:
+    cmd: "cat {{ download_path }}/ssl/{{ primary_domain }}.key {{ download_path }}/ssl/{{ primary_domain }}.crt > /etc/haproxy/ssl/{{ primary_domain }}.keycacrt.crt"

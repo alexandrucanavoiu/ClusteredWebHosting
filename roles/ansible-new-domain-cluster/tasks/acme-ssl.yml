@@ -1,0 +1,15 @@
+- name: Generate SSL for {{ primary_domain }} | acme.sh
+  shell: '/root/.acme.sh/acme.sh --accountconf /root/.acme.sh/account.conf  --issue --standalone -d {{ primary_domain }} -d www.{{ primary_domain }} --httpport 9785 --reloadcmd     "cat /root/.acme.sh/{{ primary_domain }}/{{ primary_domain }}.key /root/.acme.sh/{{ primary_domain }}/fullchain.cer > /etc/haproxy/ssl/{{ primary_domain }}.keycacrt.crt && service haproxy restart"'
+  args:
+    chdir: "{{ download_path }}/"
+  register: generate_ssl_acme_sh
+  ignore_errors: yes
+  when: cluster_setup_mode in [1, 2]
+
+- name: Generate SSL for {{ primary_domain }} | acme.sh
+  shell: '/root/.acme.sh/acme.sh --accountconf /root/.acme.sh/account.conf  --issue -d {{ primary_domain }} -d www.{{ primary_domain }} -w /home/{{ primary_domain_user }}/public_html --reloadcmd "cat /root/.acme.sh/{{ primary_domain }}/{{ primary_domain }}.key > /etc/nginx/ssl/{{ primary_domain }}.key && cat /root/.acme.sh/{{ primary_domain }}/fullchain.cer > /etc/nginx/ssl/{{ primary_domain }}.crt"'
+  args:
+    chdir: "{{ download_path }}/"
+  register: generate_ssl_acme_sh
+  ignore_errors: yes
+  when: cluster_setup_mode == 3

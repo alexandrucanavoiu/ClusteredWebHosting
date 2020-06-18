@@ -1,0 +1,58 @@
+---
+- name:  Generate UID & GUID
+  block:
+  - name: Determine if the user id {{ primary_domain_id }} exists.
+    shell: grep {{ primary_domain_id }} /etc/passwd |  awk -F":" '{print $3}'
+    changed_when: false
+    register: existing_user
+    
+  - name: Determine if the group id {{ primary_domain_id }} exists.
+    shell: grep {{ primary_domain_id }} /etc/group |  awk -F":" '{print $3}'
+    changed_when: false
+    register: existing_group
+    
+  - name: Fail if Check GUID/UID exist
+    fail:
+      msg: "GUID {{ primary_domain_id }} / UID {{ primary_domain_id }} exists on this server."
+    when: existing_group.stdout != "" and existing_user.stdout != ""
+  - debug:
+      msg: "{{ primary_domain_id }}"
+
+- import_tasks: precheck-nginx.yml
+  when: cluster_setup_mode in [2, 3] and ( inventory_hostname in groups['nodes'] )
+
+- import_tasks: precheck-httpd.yml
+  when: cluster_setup_mode == 1 and inventory_hostname in groups['nodes']
+
+- import_tasks: useradd.yml
+
+- import_tasks: create-domain-folder.yml
+  when: inventory_hostname in groups['lb']
+
+- import_tasks: storage.yml
+  when: inventory_hostname in groups['lb']
+
+- import_tasks: storage-mount.yml
+  when: inventory_hostname in groups['nodes']
+
+- import_tasks: nginx.yml
+  when: inventory_hostname in groups['nodes'] and cluster_setup_mode in [2, 3]
+
+- import_tasks: httpd.yml
+  when: inventory_hostname in groups['nodes'] and cluster_setup_mode == 1
+
+- import_tasks: php-fpm.yml
+  when: inventory_hostname in groups['nodes']
+
+- import_tasks: haproxy.yml
+  when: ( inventory_hostname in groups['lb'] and cluster_setup_mode == 1 ) or ( inventory_hostname in groups['lb'] and cluster_setup_mode == 2 )
+
+- import_tasks: self-ssl.yml
+  when: primary_domain_with_ssl == 1 and primary_domain_with_dns == 0 and ( inventory_hostname in groups['lb'] )
+
+- import_tasks: reload-services.yml
+
+- import_tasks: acme-ssl.yml
+  when: inventory_hostname in groups['lb'] and primary_domain_with_dns == 1 and primary_domain_with_ssl == 1 and cluster_setup_mode in [1, 2, 3]
+
+- import_tasks: reload-services.yml

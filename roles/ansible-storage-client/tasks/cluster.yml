@@ -1,0 +1,13 @@
+---
+- name: Copy storage_mount file. | storage client
+  template:
+    src: storage_mount.j2
+    dest: /etc/init.d/storage_mount
+    owner: root
+    group: root
+    mode: "755"
+  when: new_domain is undefined and groups['nodes']
+
+- name: storage_mount mount stop & start | storage client
+  shell: /etc/init.d/storage_mount stop && /etc/init.d/storage_mount start
+  when: new_domain is undefined and groups['nodes']

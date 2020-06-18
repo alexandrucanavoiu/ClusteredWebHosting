@@ -2,8 +2,12 @@ server {
 {% if cluster_setup_mode == 3 %}
     listen         {{ ansible_default_ipv4.address }}:80;
     listen         {{ ansible_default_ipv4.address }}:443 ssl;
-{% else %}
+{% endif %}
+{% if cluster_setup_mode == 2 %}
     listen         {{ ansible_default_ipv4.address }}:8080;
+{% endif %}
+{% if cluster_setup_mode == 10 %}
+    listen         127.0.0.1:8080;
 {% endif %}
 
     #Domain

@@ -1,0 +1,9 @@
+- hosts: all
+  user: root
+  become: true
+  gather_facts: yes
+  vars_files:
+    - vars/new-domain-vars.yml
+    - vars/setup-single-vars.yml
+  roles:
+          - { role: ansible-new-domain-single, tags: new-domain-single }

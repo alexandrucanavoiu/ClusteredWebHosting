@@ -1,0 +1,39 @@
+---
+  - set_fact:
+      path_to_remove: "/storage/websites/{{ primary_domain_user }} "
+      path_to_remove_storage: "/home/{{ primary_domain_user }}"
+
+  - name: Remove storage directory for user {{ primary_domain_user }}
+    file:
+      path: "/storage/websites/{{ primary_domain_user }}"
+      state: absent
+
+  - name: Remove symlink /home/{{ primary_domain_user }}
+    file:
+      path: "/home/{{ primary_domain_user }}"
+      state: absent
+
+  - name: remove path for {{ primary_domain_user }} from /etc/init.d/storage_mount - Step 1
+    lineinfile:
+      path: /etc/exports
+      state: absent
+      regexp: ".*{{ path_to_remove | regex_escape() }}"
+
+  - name: remove path for {{ primary_domain_user }} from /etc/init.d/storage_mount - Step 2
+    lineinfile:
+      path: /etc/init.d/storage_mount
+      state: absent
+      regexp: ".*{{ path_to_remove_storage | regex_escape() }}$"
+
+  - name: reload nfs
+    shell: "exportfs -ra"
+
+  - name: Remove certs if exist
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - "/etc/nginx/ssl/{{ primary_domain }}.crt"
+      - "/etc/nginx/ssl/{{ primary_domain }}.key"
+      - "/etc/nginx/ssl/{{ primary_domain }}.csr"
+    

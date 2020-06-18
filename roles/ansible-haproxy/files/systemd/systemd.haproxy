@@ -8,6 +8,8 @@ EnvironmentFile=/etc/sysconfig/haproxy
 ExecStart=/usr/local/sbin/haproxy -f $CONFIG_FILE -p $PID_FILE $CLI_OPTIONS
 ExecReload=/bin/kill -USR2 $MAINPID
 ExecStop=/bin/kill -USR1 $MAINPID
+Restart=on-failure
+RestartSec=30s
 
 [Install]
 WantedBy=multi-user.target

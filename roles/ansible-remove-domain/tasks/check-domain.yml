@@ -1,0 +1,13 @@
+---
+# cluster_setup_mode  10
+  - name: Check if {{ primary_domain }} exist | cluster_setup_mode  10
+    stat:
+      path: "/etc/nginx/conf.d/{{ primary_domain }}.conf"
+    register: nginx_cluster_setup_mode_10
+    when: ( cluster_setup_mode == 10 ) and ( inventory_hostname in groups['lb'] )
+
+  # - name: Fail if {{ primary_domain }} exist | cluster_setup_mode 10
+  #   fail:
+  #     msg: "{{ primary_domain }} not exist | cluster_setup_mode 10"
+  #   when: nginx_cluster_setup_mode_10.stat.exists == False
+

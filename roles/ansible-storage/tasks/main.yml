@@ -58,3 +58,9 @@
   - name: storage_mount mount
     shell: /etc/init.d/storage_mount stop && /etc/init.d/storage_mount start
 
+  - name: Change permission owner/group to {{ storage_path }}
+    file:
+      path: "{{ storage_path}}"
+      owner: root
+      group: root
+      mode: "755"

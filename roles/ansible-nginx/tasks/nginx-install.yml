@@ -17,7 +17,7 @@
     chdir: "{{ download_path }}/nginx-{{ nginx_lb_version }}"
   register: nginx_make_install
 
-- name: Copy nginx config files - cluster_setup_mode 2 or 3 | nginx
+- name: Copy nginx config files - cluster_setup_mode 2 or 3 - Step 1 | nginx
   template:
     src: "{{ item }}.j2"
     dest: "/{{ item }}"
@@ -26,10 +26,23 @@
     mode: '0600'
   with_items:
     - 'etc/nginx/nginx.conf'
-    - 'etc/nginx/conf.d/primary_domain.conf'
     - 'etc/nginx/proxy.conf'
     - 'etc/systemd/system/nginx.service'
     - 'etc/nginx/stream.conf'
+  when: ( cluster_setup_mode == 2 ) or ( cluster_setup_mode == 3 )
+
+- name: Copy nginx config files - cluster_setup_mode 10 - Step 1 | nginx
+  template:
+    src: "{{ item }}.j2"
+    dest: "/{{ item }}"
+    owner: root
+    group: root
+    mode: '0600'
+  with_items:
+    - 'etc/nginx/nginx.conf'
+    - 'etc/nginx/proxy.conf'
+    - 'etc/systemd/system/nginx.service'
+  when: cluster_setup_mode == 10 
 
 - name: Copy nginx files | nginx
   template:
@@ -40,7 +53,14 @@
     mode: '0600'
   with_items:
     - 'var/www/nginx/index.html'
-    - 'var/www/.htpasswd'
+
+- name: Copy {{ primary_domain }}.conf nginx config | nginx
+  template:
+    src: "etc/nginx/conf.d/primary_domain.conf.j2"
+    dest: "/etc/nginx/conf.d/{{ primary_domain }}.conf"
+    owner: nginx
+    group: nginx
+    mode: '0600'
 
 - name: Enable nginx service | nginx
   systemd:

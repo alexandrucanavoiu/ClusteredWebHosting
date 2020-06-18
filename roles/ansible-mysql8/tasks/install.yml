@@ -1,0 +1,33 @@
+---
+- name: Install Mysql8 from community | mysql8
+  yum:
+    name: mysql-community-server
+    enablerepo: mysql80-community
+    state: present
+
+- name: Enable Mysql8 service | mysql8
+  systemd:
+    name: mysqld
+    state: started
+    enabled: yes
+
+- name: Get temporary password | mysql8
+  command: bash -c "grep 'temporary password' /var/log/mysqld.log | awk '{print $NF}'"
+  register: mysql_temp_password
+  changed_when: False
+
+- name: Set Mysql root password
+  shell: mysql -u root -p"{{ mysql_temp_password.stdout }}" -e 'ALTER USER root@localhost IDENTIFIED WITH mysql_native_password BY "{{ mysql8_root_password }}";' --connect-expired-password
+  ignore_errors: yes
+
+- name: Copy my.cnf | mysql8
+  template:
+    src: "{{ item }}.j2"
+    dest: "/{{ item }}"
+    owner: root
+    group: root
+    mode: '0600'
+  with_items:
+    - 'etc/my.cnf'
+  notify:
+    - restart mysql8

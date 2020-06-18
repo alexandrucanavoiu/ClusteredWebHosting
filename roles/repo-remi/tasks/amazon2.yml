@@ -1,0 +1,4 @@
+- name: Install remi repo.
+  yum:
+    name: https://rpms.remirepo.net/enterprise/remi-release-7.rpm
+    state: present

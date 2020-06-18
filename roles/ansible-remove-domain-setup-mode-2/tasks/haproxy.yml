@@ -1,0 +1,17 @@
+---
+  - set_fact:
+      acl_name_d: "d_{{ primary_domain | replace('.', '_') }}"
+
+  - debug:
+      msg: "{{ acl_name_d }}"
+
+  - name: remove acl from /etc/haproxy/haproxy.cnf
+    lineinfile:
+      path: /etc/haproxy/haproxy.cfg
+      state: absent
+      regexp: ".*{{ acl_name_d }}.*"
+  
+  - name: Reload haproxy service | haproxy
+    systemd:
+      name: haproxy
+      state: reloaded

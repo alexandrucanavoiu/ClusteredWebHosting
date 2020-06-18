@@ -6,7 +6,7 @@
     owner: root
     group: root
     mode: '0600'
-  when: cluster_setup_mode == 1
+  when: cluster_setup_mode | int == 1
   notify:
     - restart iptables
 
@@ -17,7 +17,7 @@
     owner: root
     group: root
     mode: '0600'
-  when: cluster_setup_mode == 2
+  when: cluster_setup_mode | int == 2
   notify:
     - restart iptables
 
@@ -28,6 +28,17 @@
     owner: root
     group: root
     mode: '0600'
-  when: cluster_setup_mode == 3
+  when: cluster_setup_mode | int == 3
+  notify:
+    - restart iptables
+
+- name: Copy IPtables file for Cluster Setup Mode 10
+  template:
+    src: iptables-cluster-setup-mode-10.j2
+    dest: /etc/sysconfig/iptables
+    owner: root
+    group: root
+    mode: '0600'
+  when: cluster_setup_mode | int == 10
   notify:
     - restart iptables

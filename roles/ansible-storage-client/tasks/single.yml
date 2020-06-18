@@ -1,0 +1,20 @@
+---
+- name: Create Domain folder
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ primary_domain_user }}"
+    group: "{{ primary_domain_user }}"
+    mode: '0755'
+  with_items:
+    - "{{ storage_path }}/{{ primary_domain_user }}"
+    - "{{ storage_path }}/{{ primary_domain_user }}/public_html"
+
+
+- name: Create symlink from /storage/websites/{{ primary_domain_user }} to /home/{{ primary_domain_user }}
+  file:
+    src: "{{ storage_path }}/{{ primary_domain_user }}"
+    dest: "/home/{{ primary_domain_user }}"
+    owner: "{{ primary_domain_user }}"
+    group: "{{ primary_domain_user }}"
+    state: link

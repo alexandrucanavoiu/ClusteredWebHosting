@@ -1,0 +1,10 @@
+---
+# ansible-playbook -i inventory/single playbooks/remove-domain-single.yml -e "primary_domain_user=alex5123" -e "primary_domain=alex2.domain.eu" -e "cluster_setup_mode=10"
+- hosts: all
+  user: root
+  become: true
+  gather_facts: yes
+  vars_files:
+    - vars/remove-domain-vars.yml
+  roles:
+          - { role: ansible-remove-domain, tags: remove-domain }

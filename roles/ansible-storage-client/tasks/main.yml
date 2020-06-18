@@ -1,11 +1,10 @@
 ---
-- name: Copy storage_mount file. | storage client
-  template:
-    src: storage_mount.j2
-    dest: /etc/init.d/storage_mount
-    owner: root
-    group: root
-    mode: 755
+- import_tasks: cluster.yml
+  when: ( cluster_setup_mode == 1 ) or ( cluster_setup_mode == 2 ) or ( cluster_setup_mode == 3 )
 
-- name: storage_mount mount stop & start | storage client
-  shell: /etc/init.d/storage_mount stop && /etc/init.d/storage_mount start
+- import_tasks: single.yml
+  when: >
+    cluster_setup_mode == 10
+
+- import_tasks: domain-ssh.yml
+  when: primary_domain_ssh_key == 1 and groups['lb']

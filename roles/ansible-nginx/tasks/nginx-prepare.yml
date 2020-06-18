@@ -64,7 +64,7 @@
     system: yes
     state: present
 
-- name: Create /var/lib/nginx/tmp/client_body | nginx-lb
+- name: Create /var/lib/nginx/tmp/client_body | nginx
   file:
     path: "/var/lib/nginx/tmp/client_body"
     state: directory

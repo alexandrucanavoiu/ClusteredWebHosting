@@ -1,0 +1,8 @@
+---
+- name: Copy {{ primary_domain}}.conf file to /etc/httpd/conf/conf.d/ | httpd
+  template:
+    src: 'httpd_primary_domain.conf.j2'
+    dest: "/etc/httpd/conf.d/{{ primary_domain }}.conf"
+    owner: root
+    group: root
+    mode: '0600'

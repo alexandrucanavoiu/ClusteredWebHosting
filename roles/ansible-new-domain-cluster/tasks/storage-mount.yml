@@ -1,0 +1,26 @@
+---
+- set_fact:
+    storage_mkdir_line: "mkdir -p /home/{{ primary_domain_user }}/"
+    storage_line: "mount -o noatime,nodiratime {{ nfs_ip_mount }}:/storage/websites/{{ primary_domain_user }}/ /home/{{ primary_domain_user }}/"
+    storage_umnt_line: "umount -l  /home/{{ primary_domain_user }}/"
+
+- name: modify storage mount bash script - Step 1
+  replace:
+    path: /etc/init.d/storage_mount
+    regexp: '^(.*storage_mkdir.*)(?!storage_mkdir_line)'
+    replace: '\1\n{{ storage_mkdir_line }}'
+
+- name: modify storage mount bash script - Step 2
+  replace:
+    path: /etc/init.d/storage_mount
+    regexp: '^(.*storage_website_mount.*)(?!storage_line)'
+    replace: '\1\n{{ storage_line }}'
+
+- name: modify storage mount bash script - Step 3
+  replace:
+    path: /etc/init.d/storage_mount
+    regexp: '^(.*storage_umount.*)(?!storage_umnt_line)'
+    replace: '\1\n{{ storage_umnt_line }}'
+
+- name: storage_mount mount stop & start
+  shell: /etc/init.d/storage_mount stop && /etc/init.d/storage_mount start

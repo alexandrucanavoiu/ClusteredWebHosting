@@ -1,0 +1,20 @@
+---
+  - name: alert if variable does not exist
+    fail:
+      msg: "{{ item }} is not defined"
+    when: "{{ item }} is not defined"
+    with_items:
+      - primary_domain_user
+      - primary_domain
+      - cluster_setup_mode
+
+  - name: Fail if cluster_setup_mode is not defined proper
+    fail:
+      msg: "Fail cluster_setup_mode is not 1, 2 , 3 or 10"
+    when: cluster_setup_mode | int not in cluster_setup_mode_accepted
+
+  # cluster_setup_mode 10
+  # Check if domain exist
+  - import_tasks: check-domain-cluster-setup-mode-10.yml
+    when: cluster_setup_mode | int == 10 and ( inventory_hostname in groups['lb'] )
+

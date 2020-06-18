@@ -1,5 +1,22 @@
 ---
 # tasks file for ansible-cluster-prepare
+  - name: Get OS Name
+    shell: awk -F= '$1=="PRETTY_NAME" { print $2 ;}' /etc/os-release
+    register: os_release
+
+  - name: Validate OS
+    fail:
+      msg: "OS is not CentOS 7 or Amazon Linux 2"
+    when: '"Amazon Linux 2" not in os_release.stdout and "CentOS Linux 7" not in os_release.stdout'
+
+  - set_fact:
+      os_name: 'centos'
+    when: '"CentOS Linux 7" in os_release.stdout'
+  
+  - set_fact:
+      os_name: 'amazon'
+    when: '"Amazon Linux 2" in os_release.stdout'
+
   - name: Create download_cluster folder in /root
     file:
       path: "{{ download_path }}"
@@ -16,49 +33,79 @@
     until: buildtools_install_buildtools is succeeded
     retries: 3
 
+  - name: Get pip
+    shell: "curl -O https://bootstrap.pypa.io/get-pip.py"
+    args:
+      chdir: "{{ download_path }}/"
+    when: os_name == "amazon"
+
+  - name: Install pip
+    shell: "python3 {{ download_path }}/get-pip.py"
+    args:
+      chdir: "{{ download_path }}/"
+    when: os_name == "amazon"
+
+  - name: export PATH /usr/local/bin
+    shell: export PATH=/usr/local/bin:/usr/bin/:$PATH
+    when: os_name == "amazon"
+
   - name: install the package, force upgrade pip
-    shell: pip3 install --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
+    command: "/usr/local/bin/pip3 install --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org"
+    when: os_name == "amazon"
+
+  - name: export PATH /usr/local/bin
+    shell: export PATH=/usr/local/bin:/usr/bin/:$PATH
+    when: os_name == "amazon"
 
   - name: install latest pyOpenSSL using pip if needed
-    shell: pip3 install pyOpenSSL --trusted-host pypi.org --trusted-host files.pythonhosted.org
+    command: "/usr/local/bin/pip3 install pyOpenSSL --trusted-host pypi.org --trusted-host files.pythonhosted.org"
+    when: os_name == "amazon"
+
+  - name: install the package, force upgrade pip
+    command: "pip3 install --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org"
+    when: os_name == "centos"
+
+  - name: install latest pyOpenSSL using pip if needed
+    command: "pip3 install pyOpenSSL --trusted-host pypi.org --trusted-host files.pythonhosted.org"
+    when: os_name == "centos"
 
   - name: remove pyOpenSSL
     yum:
       name: "pyOpenSSL"
       state: absent
 
-  - name: Determine if the group id {{ primary_domain_gid }} exists.
-    shell: grep {{ primary_domain_gid }} /etc/group |  awk -F":" '{print $3}'
-    changed_when: false
-    register: existing_group
+  # - name: Determine if the group id {{ primary_domain_gid }} exists.
+  #   shell: grep {{ primary_domain_gid }} /etc/group |  awk -F":" '{print $3}'
+  #   changed_when: false
+  #   register: existing_group
 
-  - name: Determine if the group id {{ primary_domain_gid }} exists.
-    shell: grep {{ primary_domain_gid }} /etc/group |  awk -F":" '{print $3}'
-    changed_when: false
-    register: existing_users
+  # - name: Determine if the group id {{ primary_domain_gid }} exists.
+  #   shell: grep {{ primary_domain_gid }} /etc/group |  awk -F":" '{print $3}'
+  #   changed_when: false
+  #   register: existing_users
 
-##  - name: Check GUID if exist
-#  - fail:
-#      msg: "GUID {{ primary_domain_gid }} exists on this server."
-#    when: existing_group.stdout != ""
-#
-##  - name: Check UID if exist
-#  - fail:
-#      msg: "UID {{ primary_domain_gid }} exists on this server."
-#    when: existing_users.stdout != ""
+  # - name: Check GUID if exist
+  #   fail:
+  #     msg: "GUID {{ primary_domain_gid }} exists on this server."
+  #   when: existing_group.stdout != ""
 
-  - name: Disable Firewalld service
+  # - name: Check UID if exist
+  #   fail:
+  #     msg: "UID {{ primary_domain_gid }} exists on this server."
+  #   when: existing_users.stdout != ""
+
+  - name: Disable Firewalld service | systemctl disable firewalld
+    shell: systemctl disable firewalld
+    ignore_errors: yes
+
+  - name: Stop Firewalld service systemctl stop firewalld
+    systemd:
+      name: firewalld
+      state: stopped
+    ignore_errors: yes
+
+  - name: Disable Firewalld service | yum remove firewalld
     yum:
       name: firewalld
       state: absent
-
-#  - name: Ensure rpcbind service/socket, rpc-statd is stopped.
-#    service:
-#      name: "{{ item }}"
-#      state: stopped
-#      enabled: no
-#      masked: yes
-#    with_items:
-#      - rpc-statd.service
-#      - rpcbind.service
-#      - rpcbind.socket
+    ignore_errors: yes

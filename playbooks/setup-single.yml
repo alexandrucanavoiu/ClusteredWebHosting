@@ -1,0 +1,27 @@
+- hosts: lb
+  user: root
+  become: false
+  gather_facts: yes
+  vars_files:
+    - vars/global-vars.yml
+    - vars/setup-single-vars.yml
+  roles:
+          - { role: ansible-cluster-prepare, tags: cluster-prepare }
+          - { role: ansible-change-hostname, tags: change-hostname }
+          - { role: ansible-disable-selinux, tags: disable-selinux }
+          - { role: repo-epel, tags: repo-epel }
+          - { role: repo-remi, tags: repo-remi }
+          - { role: ansible-fail2ban, tags: fail2ban }
+          - { role: ansible-iptables-services, tags: iptables }
+          - { role: ansible-useradd, tags: useradd }
+          - { role: ansible-storage-client, tags: storage-client }
+          - { role: ansible-logrotate, tags: logrotate }
+          - { role: ansible-ntp-client, tags: ntp-client }
+          - { role: ansible-haproxy, tags: haproxy }
+          - { role: ansible-nginx, tags: nginx }
+          - { role: ansible-php-fpm, tags: php-fpm }
+          - { role: ansible-mysql8, tags: mysql8 }
+          - { role: ansible-acme.sh, tags: acme.sh }
+          - { role: ansible-phpmyadmin, tags: phpmyadmin }
+          - { role: ansible-composer-tool, tags: composer-tool }
+          - { role: ansible-final-check, tags: final-check }

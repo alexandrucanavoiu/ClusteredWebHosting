@@ -1,0 +1,10 @@
+---
+- name: reloaded nginx service | nginx
+  systemd:
+    name: nginx
+    state: reloaded
+
+- name: restarted haproxy service
+  systemd:
+    name: haproxy
+    state: restarted

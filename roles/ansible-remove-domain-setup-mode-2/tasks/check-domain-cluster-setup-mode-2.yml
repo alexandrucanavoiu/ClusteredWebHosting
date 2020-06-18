@@ -1,0 +1,39 @@
+---
+# cluster_setup_mode  1
+  - name: Check if {{ primary_domain }} exist | cluster_setup_mode  2
+    stat:
+      path: "/etc/nginx/conf.d/{{ primary_domain }}.conf"
+    register: nginx_cluster_setup_mode_2
+
+  - name: Fail if {{ primary_domain }} exist | cluster_setup_mode 2
+    fail:
+      msg: "{{ primary_domain }} not exist | cluster_setup_mode 2"
+    when: nginx_cluster_setup_mode_2.stat.exists == False
+
+  - name: Determine if the user {{ primary_domain_user }} exist - Step 1
+    shell: "grep {{ primary_domain_user }}: /etc/passwd |  awk -F':' '{print $3}'"
+    changed_when: false
+    register: existing_user_domain
+
+  - name: Fail if user {{ primary_domain_user }} not exist - Step 2
+    fail:
+      msg: "User {{ primary_domain_user }} not exist "
+    when: existing_user_domain.stdout == ""
+
+  - name: Determine if the user {{ primary_domain_user }} is associated with domain {{ primary_domain }} - Step 1
+    shell: "grep {{ primary_domain_user }}: /etc/passwd |  awk -F':' '{print $6}'"
+    changed_when: false
+    register: get_home_dir_user_1
+
+  - name: Determine if the user {{ primary_domain_user }} is associated with domain {{ primary_domain }} - Step 2
+    shell: "if grep -q '{{ get_home_dir_user_1.stdout }}/' /etc/nginx/conf.d/{{ primary_domain }}.conf; then echo 'yes'; else echo 'no'; fi"
+    changed_when: false
+    register: get_home_dir_user_2
+    ignore_errors: yes
+    failed_when: get_home_dir_user_2.stdout == ""
+    check_mode: no
+
+  - name: Fail if the user {{ primary_domain_user }} is not associated with domain {{ primary_domain }} - Step 3
+    fail:
+      msg: "User {{ primary_domain_user }} is not associated with domain {{ primary_domain }}"
+    when: get_home_dir_user_2.stdout == "no"

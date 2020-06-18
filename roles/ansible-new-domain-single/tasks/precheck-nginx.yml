@@ -1,0 +1,10 @@
+---
+- name: Determine if domain {{ primary_domain }} exist in nginx.
+  stat:
+    path: "/etc/nginx/conf.d/{{ primary_domain }}.conf"
+  register: primary_domain_nginx_result
+
+- name: Fail if domain {{ primary_domain }} exist in nginx. 
+  fail:
+    msg: "Domain {{ primary_domain }} exists on this server."
+  when: primary_domain_nginx_result.stat.exists == True

@@ -1,0 +1,22 @@
+---
+- name: Delete folder phpmyadmin if exist - cluster_setup_mode 1 | phpmyadmin
+  file:
+    path: "/var/www/html/phpMyAdmin-{{ phpmyadmin_version }}-english"
+    state: absent
+  when: cluster_setup_mode == 1
+
+- name: Download & Unarchive Phpmyadmin - cluster_setup_mode 1 | phpmyadmin
+  unarchive:
+    src: "https://files.phpmyadmin.net/phpMyAdmin/{{ phpmyadmin_version }}/phpMyAdmin-{{ phpmyadmin_version }}-english.tar.gz"
+    dest: "/var/www/html/"
+    remote_src: yes
+    group: apache
+    owner: apache
+    extra_opts:
+      - --transform
+      - s/^phpMyAdmin-{{ phpmyadmin_version }}-english/phpmyadmin/
+
+- name: Delete folder phpmyadmin if exist | phpmyadmin
+  file:
+    path: "/var/www/html/phpMyAdmin-{{ phpmyadmin_version }}-english"
+    state: absent

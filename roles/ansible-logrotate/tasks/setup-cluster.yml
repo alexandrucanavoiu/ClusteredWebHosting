@@ -1,0 +1,24 @@
+- name: Copy logrotate.d files - Cluster Server | logrotate
+  template:
+    src: "{{ item }}"
+    dest: "/{{ item }}"
+  with_items:
+    - 'etc/logrotate.d/cron'
+    - 'etc/logrotate.d/dmesg'
+    - 'etc/logrotate.d/secure'
+
+- name: Copy logrotate.d files for mysql servers - Cluster Server | logrotat
+  template:
+    src: "{{ item }}"
+    dest: "/{{ item }}"
+  with_items:
+    - 'etc/logrotate.d/mysqld'
+  when: "'galera_cluster_nodes' in group_names"
+
+- name: Copy logrotate.d files for nodes servers - Cluster Server | logrotate
+  template:
+    src: "{{ item }}"
+    dest: "/{{ item }}"
+  with_items:
+    - 'etc/logrotate.d/mysqld'
+  when: "'nodes' in group_names"
