@@ -13,7 +13,7 @@ It was tested with:
 - (Load Balancer) Nginx -> (Nodes) Nginx (3) + MariaDB Galera Cluster
 
 ## Single Setup Mode
-- (Load Balancer) Nginx -> (Nodes) Nginx (10) + Mysql8
+- (Load Balancer) Haproxy -> (Nodes) Nginx (10) + Mysql8
 
 ## Overview
 - Haproxy / Nginx as a Load Balancer
