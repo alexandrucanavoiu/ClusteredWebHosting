@@ -51,6 +51,14 @@
     group: root
     mode: '0600'
 
+- name: Copy {{ primary_domain }}.conf file to /etc/httpd/conf/conf.d/ | httpd
+  template:
+    src: primary_domain.conf.j2
+    dest: "/etc/httpd/conf.d/000-{{ primary_domain }}.conf"
+    owner: root
+    group: root
+    mode: '0600'
+
 - name: Enable httpd service
   systemd:
     name: httpd

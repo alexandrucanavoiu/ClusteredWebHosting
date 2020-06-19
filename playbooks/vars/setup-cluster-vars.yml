@@ -6,7 +6,7 @@
 #Single Server Setup Mode
 # 10 = (Load Balancer) Haproxy -> (Backend) Nginx
 
-cluster_setup_mode: 2
+cluster_setup_mode: 1
 
 nfs_ip_mount: 192.168.101
 
