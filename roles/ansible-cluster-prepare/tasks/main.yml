@@ -1,5 +1,25 @@
 ---
 # tasks file for ansible-cluster-prepare
+  - name: Determine if the group id {{ primary_domain_gid }} exists.
+    shell: grep {{ primary_domain_gid }} /etc/group |  awk -F":" '{print $3}'
+    changed_when: false
+    register: existing_group
+
+  - name: Determine if the group id {{ primary_domain_gid }} exists.
+    shell: grep {{ primary_domain_gid }} /etc/group |  awk -F":" '{print $3}'
+    changed_when: false
+    register: existing_users
+
+  - name: Check GUID if exist
+    fail:
+      msg: "GUID {{ primary_domain_gid }} exists on this server."
+    when: existing_group.stdout != ""
+
+  - name: Check UID if exist
+    fail:
+      msg: "UID {{ primary_domain_gid }} exists on this server."
+    when: existing_users.stdout != ""
+
   - name: Get OS Name
     shell: awk -F= '$1=="PRETTY_NAME" { print $2 ;}' /etc/os-release
     register: os_release
@@ -74,38 +94,14 @@
       name: "pyOpenSSL"
       state: absent
 
-  # - name: Determine if the group id {{ primary_domain_gid }} exists.
-  #   shell: grep {{ primary_domain_gid }} /etc/group |  awk -F":" '{print $3}'
-  #   changed_when: false
-  #   register: existing_group
-
-  # - name: Determine if the group id {{ primary_domain_gid }} exists.
-  #   shell: grep {{ primary_domain_gid }} /etc/group |  awk -F":" '{print $3}'
-  #   changed_when: false
-  #   register: existing_users
-
-  # - name: Check GUID if exist
-  #   fail:
-  #     msg: "GUID {{ primary_domain_gid }} exists on this server."
-  #   when: existing_group.stdout != ""
-
-  # - name: Check UID if exist
-  #   fail:
-  #     msg: "UID {{ primary_domain_gid }} exists on this server."
-  #   when: existing_users.stdout != ""
-
   - name: Disable Firewalld service | systemctl disable firewalld
     shell: systemctl disable firewalld
     ignore_errors: yes
 
   - name: Stop Firewalld service systemctl stop firewalld
-    systemd:
-      name: firewalld
-      state: stopped
+    shell: systemctl stop firewalld
     ignore_errors: yes
 
   - name: Disable Firewalld service | yum remove firewalld
-    yum:
-      name: firewalld
-      state: absent
+    shell: systemctl remove firewalld -y
     ignore_errors: yes

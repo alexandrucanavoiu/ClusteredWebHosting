@@ -1,5 +1,5 @@
 #Cluster Setup Mode
-# 1 = (Load Balancer) Haproxy -> (Nodes) Apache + Lighttpd
+# 1 = (Load Balancer) Haproxy -> (Nodes) Apache
 # 2 = (Load Balancer) Haproxy -> (Nodes) Nginx
 # 3 = (Load Balancer) Nginx -> (Nodes) Nginx
 
@@ -8,7 +8,7 @@
 
 cluster_setup_mode: 1
 
-nfs_ip_mount: 192.168.101
+nfs_ip_mount: 192.168.1.101
 
 # mariadb global variables
 mariadb_version: 10.4
