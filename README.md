@@ -1,4 +1,4 @@
-# ClusteredWebHosting - A easy way for clustering.
+# ClusteredWebHosting - An easy way for clustering.
 
 Create your own cluster using ansible.
 
